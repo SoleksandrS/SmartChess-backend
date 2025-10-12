@@ -1,0 +1,11 @@
+version: '1'
+services:
+  postgres:
+    image: postgres:11-alpine
+    restart: always
+    ports:
+      - '${POSTGRES_PORT_EXT:-5432}:5432'
+    env_file:
+      - ./.env
+    volumes:
+      - ./volumes/pgdata:/var/lib/postgresql/data
