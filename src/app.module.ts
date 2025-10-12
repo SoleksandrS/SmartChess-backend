@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SocketModule } from './modules/socket/socket.module';
+import { HeartbeatModule } from './modules/heartbeat/heartbeat.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { SocketModule } from './modules/socket/socket.module';
       synchronize: false,
     }),
     SocketModule,
+    HeartbeatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
