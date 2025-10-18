@@ -1,27 +1,40 @@
-import { Game } from 'src/modules/games/entities/game.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  OneToMany,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { User } from 'src/modules/users/entities/user.entity';
 
-@Entity('users')
-export class User {
+@Entity('games')
+export class Game {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'varchar', nullable: false })
-  username: string;
+  fen: string;
 
   @Column({ type: 'varchar', nullable: false })
-  email: string;
+  turn: string;
 
-  @Column({ type: 'varchar', nullable: false })
-  password: string;
+  @Column({ type: 'varchar', nullable: true })
+  result: string;
+
+  @ManyToOne(() => User, (entity) => entity.id)
+  @JoinColumn({ name: 'whitePlayerId' })
+  whitePlayer: User;
+  @Column()
+  whitePlayerId: number;
+
+  @ManyToOne(() => User, (entity) => entity.id)
+  @JoinColumn({ name: 'blackPlayerId' })
+  blackPlayer: User;
+  @Column()
+  blackPlayerId: number;
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'now()' })
   createdAt: Date;
@@ -31,10 +44,4 @@ export class User {
 
   @DeleteDateColumn({ type: 'timestamptz', nullable: true })
   deletedAt: Date;
-
-  @OneToMany(() => Game, (entity) => entity.whitePlayer)
-  gamesWhite: Game[];
-
-  @OneToMany(() => Game, (entity) => entity.blackPlayer)
-  gamesBlack: Game[];
 }
