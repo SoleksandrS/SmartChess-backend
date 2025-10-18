@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { constants } from 'src/config';
 import { EGameSide } from 'src/types/chess.types';
 import { Game } from './entities/game.entity';
+import { GameMove } from './entities/game-move.entity';
 import { CreateGameDto } from './dto/create-game.dto';
 
 @Injectable()
@@ -11,6 +12,8 @@ export class GamesService {
   constructor(
     @InjectRepository(Game)
     private gameRepo: Repository<Game>,
+    @InjectRepository(GameMove)
+    private moveRepo: Repository<GameMove>,
   ) {}
 
   private getInitBody<T>(body: T) {
@@ -31,6 +34,31 @@ export class GamesService {
     try {
       const res = await this.gameRepo.insert(this.getInitBody(body));
       return res;
+    } catch (err) {
+      if (err instanceof HttpException) throw err;
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async makeMove(id: number, turn: EGameSide, move: string) {
+    try {
+      const params = { where: { id }, relations: ['moves'] };
+      const game = await this.gameRepo.findOne(params);
+      if (!game)
+        throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
+
+      const fen = game.fen;
+      const nextTurn =
+        turn === EGameSide.WHITE ? EGameSide.BLACK : EGameSide.WHITE;
+
+      const body1 = { fen, turn: nextTurn };
+      await this.gameRepo.update(id, body1);
+
+      const moveNumber = game.moves.length + 1;
+      const body2 = { gameId: game.id, moveNumber, turn, move };
+      await this.moveRepo.insert(body2);
+
+      return true;
     } catch (err) {
       if (err instanceof HttpException) throw err;
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
