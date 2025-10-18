@@ -1,6 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { constants } from 'src/config';
+import { EGameSide } from 'src/types/chess.types';
 import { Game } from './entities/game.entity';
 import { CreateGameDto } from './dto/create-game.dto';
 
@@ -12,8 +14,7 @@ export class GamesService {
   ) {}
 
   private getInitBody<T>(body: T) {
-    const fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-    return { ...body, fen, turn: 'w' };
+    return { ...body, fen: constants.chess.initFen, turn: EGameSide.WHITE };
   }
 
   async findOne(id: number) {
