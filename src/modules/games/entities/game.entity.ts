@@ -5,14 +5,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from 'src/modules/users/entities/user.entity';
 
 @Entity('games')
 export class Game {
-  @PrimaryGeneratedColumn()
+  @PrimaryColumn({ type: 'uuid' })
   id: number;
 
   @Column({ type: 'varchar', nullable: false })

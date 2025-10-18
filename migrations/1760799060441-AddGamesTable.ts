@@ -16,10 +16,10 @@ export class AddGamesTable1760799060441 implements MigrationInterface {
         columns: [
           {
             name: 'id',
-            type: 'int',
+            type: 'uuid',
             isPrimary: true,
-            isGenerated: true,
-            generationStrategy: 'increment',
+            generationStrategy: 'uuid',
+            default: 'uuid_generate_v4()',
           },
           {
             name: 'fen',
