@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SocketModule } from './modules/socket/socket.module';
 import { HeartbeatModule } from './modules/heartbeat/heartbeat.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { HeartbeatModule } from './modules/heartbeat/heartbeat.module';
     }),
     SocketModule,
     HeartbeatModule,
+    UsersModule,
   ],
 })
 export class AppModule {}
