@@ -1,6 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { GamesService } from './games.service';
 import { CreateGameDto } from './dto/create-game.dto';
+import { MakeMoveDto } from './dto/make-move.dto';
 
 @Controller('games')
 export class GamesController {
@@ -19,6 +28,11 @@ export class GamesController {
   @Post(':id/restore')
   restore(@Param('id') id: number) {
     return this.service.restore(id);
+  }
+
+  @Put(':id/move')
+  makeMove(@Param('id') id: number, @Body() body: MakeMoveDto) {
+    return this.service.makeMove(id, body);
   }
 
   @Delete(':id')

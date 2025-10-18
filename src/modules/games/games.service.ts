@@ -7,6 +7,7 @@ import { EGameSide } from 'src/types/chess.types';
 import { Game } from './entities/game.entity';
 import { GameMove } from './entities/game-move.entity';
 import { CreateGameDto } from './dto/create-game.dto';
+import { MakeMoveDto } from './dto/make-move.dto';
 
 @Injectable()
 export class GamesService {
@@ -42,7 +43,7 @@ export class GamesService {
     }
   }
 
-  async makeMove(id: number, turn: EGameSide, move: string) {
+  async makeMove(id: number, { turn, move }: MakeMoveDto) {
     const qr = this.dataSource.createQueryRunner();
     await qr.connect();
     await qr.startTransaction();
