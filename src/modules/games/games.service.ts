@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Chess } from 'chess.js';
 import { constants } from 'src/config';
 import { EGameSide } from 'src/types/chess.types';
 import { Game } from './entities/game.entity';
@@ -52,10 +53,13 @@ export class GamesService {
       if (!game)
         throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
 
-      const fen = game.fen;
+      const chess = new Chess(game.fen);
+      const result = chess.move(move);
+      if (!result) throw new Error('Invalid move');
+      const fen = chess.fen();
+
       const nextTurn =
         turn === EGameSide.WHITE ? EGameSide.BLACK : EGameSide.WHITE;
-
       const body1 = { fen, turn: nextTurn };
       await qr.manager.update(Game, id, body1);
 
@@ -66,7 +70,7 @@ export class GamesService {
 
       await qr.commitTransaction();
 
-      return true;
+      return fen;
     } catch (err) {
       await qr.rollbackTransaction();
       if (err instanceof HttpException) throw err;
