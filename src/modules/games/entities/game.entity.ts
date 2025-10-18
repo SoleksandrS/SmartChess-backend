@@ -5,10 +5,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from 'src/modules/users/entities/user.entity';
+import { GameMove } from './game-move.entity';
 
 @Entity('games')
 export class Game {
@@ -44,4 +46,7 @@ export class Game {
 
   @DeleteDateColumn({ type: 'timestamptz', nullable: true })
   deletedAt: Date;
+
+  @OneToMany(() => GameMove, (entity) => entity.game)
+  moves: GameMove[];
 }
