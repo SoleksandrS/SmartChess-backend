@@ -1,11 +1,13 @@
-import { IsInt, IsPositive } from 'class-validator';
+import { IsInt, IsOptional, IsPositive } from 'class-validator';
 
 export class CreateGameDto {
+  @IsOptional()
   @IsInt()
   @IsPositive()
-  whitePlayerId: number;
+  whitePlayerId?: number;
 
+  @IsOptional()
   @IsInt()
   @IsPositive()
-  blackPlayerId: number;
+  blackPlayerId?: number;
 }

@@ -6,6 +6,7 @@ import { EGameSide } from 'src/types/chess.types';
 import { Game } from './entities/game.entity';
 import { GameMove } from './entities/game-move.entity';
 import { ChessEngineService } from 'src/shared/chess-engine/chess-engine.service';
+import { UsersService } from '../users/users.service';
 import { CreateGameDto } from './dto/create-game.dto';
 import { IGameCountMoves, TGameCheckAITurn } from './games.types';
 
@@ -19,6 +20,8 @@ export class GamesService {
     private moveRepo: Repository<GameMove>,
     @Inject(ChessEngineService)
     private chessEngineService: ChessEngineService,
+    @Inject(UsersService)
+    private usersService: UsersService,
   ) {}
 
   private getInitBody<T>(body: T) {
@@ -33,6 +36,15 @@ export class GamesService {
     if (turn === EGameSide.WHITE && !whitePlayerId) return true;
     if (turn === EGameSide.BLACK && !blackPlayerId) return true;
     return false;
+  }
+
+  private async getPlayer(id: number) {
+    const player = await this.usersService.findWithWhere({
+      id,
+    });
+    if (!player)
+      throw new HttpException('Player not found', HttpStatus.NOT_FOUND);
+    return player;
   }
 
   private async getGameCountMoves(id: number): Promise<IGameCountMoves> {
@@ -54,6 +66,13 @@ export class GamesService {
 
   async create(body: CreateGameDto) {
     try {
+      if (!body.whitePlayerId && !body.blackPlayerId) {
+        const msg = 'Game cannot be created without any player';
+        throw new HttpException(msg, HttpStatus.CONFLICT);
+      }
+      if (body.whitePlayerId) await this.getPlayer(body.whitePlayerId);
+      if (body.blackPlayerId) await this.getPlayer(body.blackPlayerId);
+
       const res = await this.gameRepo.insert(this.getInitBody(body));
       return res;
     } catch (err) {
