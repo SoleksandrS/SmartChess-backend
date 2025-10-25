@@ -1,11 +1,11 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Chess } from 'chess.js';
 import { constants } from 'src/config';
 import { EGameSide } from 'src/types/chess.types';
 import { Game } from './entities/game.entity';
 import { GameMove } from './entities/game-move.entity';
+import { ChessEngineService } from 'src/shared/chess-engine/chess-engine.service';
 import { CreateGameDto } from './dto/create-game.dto';
 import { MakeMoveDto } from './dto/make-move.dto';
 
@@ -17,6 +17,8 @@ export class GamesService {
     private gameRepo: Repository<Game>,
     @InjectRepository(GameMove)
     private moveRepo: Repository<GameMove>,
+    @Inject(ChessEngineService)
+    private chessEngineService: ChessEngineService,
   ) {}
 
   private getInitBody<T>(body: T) {
@@ -54,10 +56,7 @@ export class GamesService {
       if (!game)
         throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
 
-      const chess = new Chess(game.fen);
-      const result = chess.move(move);
-      if (!result) throw new Error('Invalid move');
-      const fen = chess.fen();
+      const fen = this.chessEngineService.makeMove(game.fen, move)
 
       const nextTurn =
         turn === EGameSide.WHITE ? EGameSide.BLACK : EGameSide.WHITE;
