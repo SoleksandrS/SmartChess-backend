@@ -3,6 +3,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SocketModule } from './modules/socket/socket.module';
 import { HeartbeatModule } from './modules/heartbeat/heartbeat.module';
+import { UsersModule } from './modules/users/users.module';
+import { GamesModule } from './modules/games/games.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { HeartbeatModule } from './modules/heartbeat/heartbeat.module';
     }),
     SocketModule,
     HeartbeatModule,
+    UsersModule,
+    GamesModule,
   ],
 })
 export class AppModule {}
