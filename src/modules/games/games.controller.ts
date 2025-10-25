@@ -31,8 +31,8 @@ export class GamesController {
   }
 
   @Put(':id/move')
-  makeMove(@Param('id') id: number, @Body() body: MakeMoveDto) {
-    return this.service.makeMove(id, body);
+  makeMove(@Param('id') id: number, @Body() { move }: MakeMoveDto) {
+    return this.service.complexMakeMove(id, move);
   }
 
   @Delete(':id')
