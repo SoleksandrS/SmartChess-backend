@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { QueryGetAllUsersDto } from './dto/query-get-all-users.dto';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
@@ -25,11 +24,6 @@ export class UsersController {
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.service.findOne(id);
-  }
-
-  @Post()
-  create(@Body() body: CreateUserDto) {
-    return this.service.create(body);
   }
 
   @Post(':id/restore')
