@@ -14,7 +14,7 @@ export class GameMove {
   @JoinColumn({ name: 'gameId' })
   game: Game;
   @PrimaryColumn({ type: 'uuid' })
-  gameId: number;
+  gameId: string;
 
   @PrimaryColumn()
   moveNumber: number;
