@@ -10,4 +10,5 @@ export const constants = {
 
 export const envs = {
   port: parseInt(process.env.PORT, 10) || 3000,
+  jwtSecret: process.env.JWT_SECRET || 'super-secret-key',
 };
