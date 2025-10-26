@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SocketModule } from './modules/socket/socket.module';
 import { HeartbeatModule } from './modules/heartbeat/heartbeat.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { GamesModule } from './modules/games/games.module';
 
@@ -19,6 +20,7 @@ import { GamesModule } from './modules/games/games.module';
     }),
     SocketModule,
     HeartbeatModule,
+    AuthModule,
     UsersModule,
     GamesModule,
   ],
