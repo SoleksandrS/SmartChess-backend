@@ -7,11 +7,15 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/guards/roles.guard';
 import { UsersService } from './users.service';
 import { QueryGetAllUsersDto } from './dto/query-get-all-users.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly service: UsersService) {}
