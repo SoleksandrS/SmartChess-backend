@@ -17,7 +17,7 @@ export class GamesService {
     return { ...body, fen: constants.chess.initFen, turn: EGameSide.WHITE };
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     try {
       const res = await this.gameRepo.findOneBy({ id });
       return res;
@@ -37,7 +37,7 @@ export class GamesService {
     }
   }
 
-  async delete(id: number) {
+  async delete(id: string) {
     try {
       const res = await this.gameRepo.softDelete(id);
       return res;
@@ -47,7 +47,7 @@ export class GamesService {
     }
   }
 
-  async restore(id: number) {
+  async restore(id: string) {
     try {
       const res = await this.gameRepo.restore(id);
       return res;

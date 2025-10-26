@@ -7,7 +7,7 @@ export class GamesController {
   constructor(private readonly service: GamesService) {}
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id') id: string) {
     return this.service.findOne(id);
   }
 
@@ -17,12 +17,12 @@ export class GamesController {
   }
 
   @Post(':id/restore')
-  restore(@Param('id') id: number) {
+  restore(@Param('id') id: string) {
     return this.service.restore(id);
   }
 
   @Delete(':id')
-  delete(@Param('id') id: number) {
+  delete(@Param('id') id: string) {
     return this.service.delete(id);
   }
 }

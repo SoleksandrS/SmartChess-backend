@@ -15,7 +15,7 @@ import { GameMove } from './game-move.entity';
 @Entity('games')
 export class Game {
   @PrimaryColumn({ type: 'uuid' })
-  id: number;
+  id: string;
 
   @Column({ type: 'varchar', nullable: false })
   fen: string;
