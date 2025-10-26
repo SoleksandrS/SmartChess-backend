@@ -10,10 +10,7 @@ import { UsersModule } from '../users/users.module';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      secret: envs.jwtSecret,
-      signOptions: { expiresIn: '1d' },
-    }),
+    JwtModule.register({ secret: envs.jwtSecret }),
     UsersModule,
   ],
   providers: [JwtStrategy, AuthService],
