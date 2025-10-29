@@ -46,6 +46,18 @@ export class UsersService {
     }
   }
 
+  async findCurrent(email: string) {
+    try {
+      return this.userRepo.findOne({
+        where: { email },
+        select: ['username', 'email'],
+      });
+    } catch (err) {
+      if (err instanceof HttpException) throw err;
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   async create(body: CreateUserDto) {
     try {
       const res = await this.userRepo.insert(body);

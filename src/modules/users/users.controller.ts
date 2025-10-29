@@ -7,8 +7,10 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
+import { IRequest } from 'src/core/interfaces';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { UsersService } from './users.service';
@@ -23,6 +25,11 @@ export class UsersController {
   @Get()
   findAll(@Query() params: QueryGetAllUsersDto) {
     return this.service.findAll(params);
+  }
+
+  @Get('current')
+  findCurrent(@Req() req: IRequest) {
+    return this.service.findCurrent(req.user.email);
   }
 
   @Get(':id')
