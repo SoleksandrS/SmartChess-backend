@@ -92,7 +92,7 @@ export class GamesService {
 
       const isAIMove = this.checkIsAITurn(game);
       if (isAIMove) {
-        const res2 = this.makeAIMove(game, qr);
+        const res2 = await this.makeAIMove(game, qr);
         game = { ...game, ...res2 };
       }
 
