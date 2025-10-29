@@ -21,9 +21,7 @@ export class UsersService {
     const { username } = params;
 
     try {
-      const qb = this.userRepo
-        .createQueryBuilder('entity')
-        .withDeleted();
+      const qb = this.userRepo.createQueryBuilder('entity').withDeleted();
 
       if (username) {
         const str = `%${username}%`;
