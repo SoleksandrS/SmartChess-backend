@@ -39,22 +39,20 @@ export class GamesService {
   }
 
   private async getPlayer(id: number) {
-    const player = await this.usersService.findWithWhere({
-      id,
-    });
+    const player = await this.usersService.findWithWhere({ id });
     if (!player)
       throw new HttpException('Player not found', HttpStatus.NOT_FOUND);
     return player;
   }
 
-  private async getGameCountMoves(id: number): Promise<IGameCountMoves> {
+  private async getGameCountMoves(id: string): Promise<IGameCountMoves> {
     const params = { where: { id }, relations: ['moves'] };
     const game = await this.gameRepo.findOne(params);
     if (!game) throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
     return { ...game, moves: game.moves.length };
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     try {
       const res = await this.gameRepo.findOneBy({ id });
       return res;
@@ -81,7 +79,7 @@ export class GamesService {
     }
   }
 
-  async complexMakeMove(id: number, move: string) {
+  async complexMakeMove(id: string, move: string) {
     const qr = this.dataSource.createQueryRunner();
     await qr.connect();
     await qr.startTransaction();
@@ -131,7 +129,7 @@ export class GamesService {
     return { fen, turn, moves: moveNumber };
   }
 
-  async delete(id: number) {
+  async delete(id: string) {
     try {
       const res = await this.gameRepo.softDelete(id);
       return res;
@@ -141,7 +139,7 @@ export class GamesService {
     }
   }
 
-  async restore(id: number) {
+  async restore(id: string) {
     try {
       const res = await this.gameRepo.restore(id);
       return res;
