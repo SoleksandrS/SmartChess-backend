@@ -119,9 +119,10 @@ export class GamesService {
 
   async makeMove(game: IGameCountMoves, move: string, qr: QueryRunner) {
     const fen = this.chessEngineService.makeMove(game.fen, move);
+    const result = this.chessEngineService.checkGameStatus(fen);
 
-    const turn = this.switchSide(game.turn as EGameSide);
-    const body1 = { fen, turn };
+    const turn = !result ? this.switchSide(game.turn as EGameSide) : game.turn;
+    const body1 = { fen, turn, result };
     await qr.manager.update(Game, game.id, body1);
 
     const moveNumber = game.moves + 1;

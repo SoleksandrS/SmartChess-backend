@@ -14,6 +14,13 @@ export class ChessEngineService {
     return chess.fen();
   }
 
+  checkGameStatus(gameFen: string) {
+    const chess = new Chess(gameFen);
+    if (chess.isCheckmate()) return 'checkmate';
+    if (chess.isDraw()) return 'draw';
+    return null;
+  }
+
   async getBestMove(gameFen: string) {
     const url = `https://stockfish.online/api/s/v2.php?fen=${gameFen}&depth=15`;
     const { data } = await axios.get<StockfishAnalysis>(url);
