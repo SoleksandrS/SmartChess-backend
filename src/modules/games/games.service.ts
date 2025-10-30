@@ -28,6 +28,10 @@ export class GamesService {
     return { ...body, fen: constants.chess.initFen, turn: EGameSide.WHITE };
   }
 
+  private switchSide(side: EGameSide) {
+    return side === EGameSide.WHITE ? EGameSide.BLACK : EGameSide.WHITE;
+  }
+
   private checkIsAITurn({
     turn,
     whitePlayerId,
@@ -116,8 +120,7 @@ export class GamesService {
   async makeMove(game: IGameCountMoves, move: string, qr: QueryRunner) {
     const fen = this.chessEngineService.makeMove(game.fen, move);
 
-    const turn =
-      game.turn === EGameSide.WHITE ? EGameSide.BLACK : EGameSide.WHITE;
+    const turn = this.switchSide(game.turn as EGameSide);
     const body1 = { fen, turn };
     await qr.manager.update(Game, game.id, body1);
 
