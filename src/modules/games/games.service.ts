@@ -102,7 +102,7 @@ export class GamesService {
 
       await qr.commitTransaction();
 
-      return game.fen;
+      return { fen: game.fen, turn: game.turn, result: game.result };
     } catch (err) {
       await qr.rollbackTransaction();
       if (err instanceof HttpException) throw err;
@@ -130,7 +130,7 @@ export class GamesService {
     const entity = this.moveRepo.create(body2);
     await qr.manager.save(entity);
 
-    return { fen, turn, moves: moveNumber };
+    return { fen, turn, result, moves: moveNumber };
   }
 
   async delete(id: string) {
