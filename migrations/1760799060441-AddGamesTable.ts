@@ -4,7 +4,7 @@ import {
   Table,
   TableForeignKey,
 } from 'typeorm';
-import { EChessResult, EChessSide } from 'src/types/chess.types';
+import { EChessSide } from 'src/types/chess.types';
 
 const tableGames = 'games';
 const tableUsers = 'users';
@@ -13,13 +13,6 @@ const enumChessResult = 'chess_result_enum';
 
 export class AddGamesTable1760799060441 implements MigrationInterface {
   public async up(qr: QueryRunner): Promise<void> {
-    await qr.query(
-      `CREATE TYPE "${enumChessSide}" AS ENUM ('${EChessSide.WHITE}', '${EChessSide.BLACK}')`,
-    );
-    await qr.query(
-      `CREATE TYPE "${enumChessResult}" AS ENUM ('${EChessResult.DRAW}', '${EChessResult.CHECKMATE}')`,
-    );
-
     await qr.createTable(
       new Table({
         name: tableGames,
@@ -97,7 +90,5 @@ export class AddGamesTable1760799060441 implements MigrationInterface {
 
   public async down(qr: QueryRunner): Promise<void> {
     await qr.dropTable(tableGames);
-    await qr.query(`DROP TYPE "${enumChessSide}"`);
-    await qr.query(`DROP TYPE "${enumChessResult}"`);
   }
 }
