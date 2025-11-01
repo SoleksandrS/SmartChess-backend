@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { constants } from 'src/config';
-import { EGameSide } from 'src/types/chess.types';
+import { EChessSide } from 'src/types/chess.types';
 import { Game } from './entities/game.entity';
 import { GameMove } from './entities/game-move.entity';
 import { ChessEngineService } from 'src/shared/chess-engine/chess-engine.service';
@@ -25,11 +25,11 @@ export class GamesService {
   ) {}
 
   private getInitBody<T>(body: T) {
-    return { ...body, fen: constants.chess.initFen, turn: EGameSide.WHITE };
+    return { ...body, fen: constants.chess.initFen, turn: EChessSide.WHITE };
   }
 
-  private switchSide(side: EGameSide) {
-    return side === EGameSide.WHITE ? EGameSide.BLACK : EGameSide.WHITE;
+  private switchSide(side: EChessSide) {
+    return side === EChessSide.WHITE ? EChessSide.BLACK : EChessSide.WHITE;
   }
 
   private checkIsAITurn({
@@ -37,8 +37,8 @@ export class GamesService {
     whitePlayerId,
     blackPlayerId,
   }: TGameCheckAITurn) {
-    if (turn === EGameSide.WHITE && !whitePlayerId) return true;
-    if (turn === EGameSide.BLACK && !blackPlayerId) return true;
+    if (turn === EChessSide.WHITE && !whitePlayerId) return true;
+    if (turn === EChessSide.BLACK && !blackPlayerId) return true;
     return false;
   }
 
@@ -129,7 +129,7 @@ export class GamesService {
     const fen = this.chessEngineService.makeMove(game.fen, move);
     const result = this.chessEngineService.checkGameStatus(fen);
 
-    const turn = !result ? this.switchSide(game.turn as EGameSide) : game.turn;
+    const turn = !result ? this.switchSide(game.turn as EChessSide) : game.turn;
     const body1 = { fen, turn, result };
     await qr.manager.update(Game, game.id, body1);
 

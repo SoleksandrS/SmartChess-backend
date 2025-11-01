@@ -7,9 +7,12 @@ import {
 
 const tableGames = 'games';
 const tableUsers = 'users';
+const enumChessSide = 'chess_side_enum';
 
 export class AddGamesTable1760799060441 implements MigrationInterface {
   public async up(qr: QueryRunner): Promise<void> {
+    await qr.query(`CREATE TYPE "${enumChessSide}" AS ENUM ('w', 'b')`);
+
     await qr.createTable(
       new Table({
         name: tableGames,
@@ -28,7 +31,7 @@ export class AddGamesTable1760799060441 implements MigrationInterface {
           },
           {
             name: 'turn',
-            type: 'varchar',
+            type: enumChessSide,
             isNullable: false,
           },
           {
@@ -86,5 +89,6 @@ export class AddGamesTable1760799060441 implements MigrationInterface {
 
   public async down(qr: QueryRunner): Promise<void> {
     await qr.dropTable(tableGames);
+    await qr.query(`DROP TYPE "${enumChessSide}"`);
   }
 }

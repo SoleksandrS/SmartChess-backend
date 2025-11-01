@@ -1,4 +1,4 @@
-export enum EGameSide {
+export enum EChessSide {
   WHITE = 'w',
   BLACK = 'b',
 }
