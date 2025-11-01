@@ -21,6 +21,9 @@ export class Game {
   @Column({ type: 'varchar', nullable: false })
   fen: string;
 
+  @Column({ type: 'int', nullable: false })
+  moveNumber: number;
+
   @Column({ type: 'enum', enum: EChessSide, nullable: false })
   turn: EChessSide;
 
