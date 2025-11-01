@@ -3,8 +3,7 @@ export enum EChessSide {
   BLACK = 'b',
 }
 
-export enum EGameWinner {
-  WHITE = 'w',
-  BLACK = 'b',
-  TIE = 'tie',
+export enum EChessResult {
+  DRAW = 'draw',
+  CHECKMATE = 'checkmate',
 }
