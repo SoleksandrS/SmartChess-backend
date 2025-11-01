@@ -7,3 +7,8 @@ export interface StockfishAnalysis {
 }
 
 export const regexBestMove = /^bestmove\s+(\S+)(?:\s+ponder\s+(\S+))?/;
+
+export enum EChessResult {
+  DRAW = 'draw',
+  CHECKMATE = 'checkmate',
+}

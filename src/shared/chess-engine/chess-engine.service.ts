@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Chess } from 'chess.js';
 import axios from 'axios';
-import { regexBestMove, StockfishAnalysis } from './chess-engine.types';
+import {
+  EChessResult,
+  regexBestMove,
+  StockfishAnalysis,
+} from './chess-engine.types';
 
 @Injectable()
 export class ChessEngineService {
@@ -16,8 +20,8 @@ export class ChessEngineService {
 
   checkGameStatus(gameFen: string) {
     const chess = new Chess(gameFen);
-    if (chess.isCheckmate()) return 'checkmate';
-    if (chess.isDraw()) return 'draw';
+    if (chess.isCheckmate()) return EChessResult.CHECKMATE;
+    if (chess.isDraw()) return EChessResult.DRAW;
     return null;
   }
 
