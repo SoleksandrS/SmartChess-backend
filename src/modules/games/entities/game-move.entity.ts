@@ -18,10 +18,10 @@ export class GameMove {
   gameId: string;
 
   @PrimaryColumn()
-  moveNumber: number;
+  number: number;
 
   @Column({ type: 'enum', enum: EChessSide, nullable: false })
-  turn: EChessSide;
+  side: EChessSide;
 
   @Column({ type: 'varchar', nullable: false })
   move: string;

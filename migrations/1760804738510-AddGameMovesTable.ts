@@ -21,12 +21,12 @@ export class AddGameMovesTable1760804738510 implements MigrationInterface {
             isPrimary: true,
           },
           {
-            name: 'moveNumber',
+            name: 'number',
             type: 'int',
             isPrimary: true,
           },
           {
-            name: 'turn',
+            name: 'side',
             type: enumChessSide,
             isNullable: false,
           },

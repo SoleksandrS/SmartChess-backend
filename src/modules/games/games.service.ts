@@ -61,7 +61,7 @@ export class GamesService {
       return this.gameRepo
         .createQueryBuilder('game')
         .innerJoin('game.moves', 'move')
-        .addSelect(['move.moveNumber', 'move.turn', 'move.move'])
+        .addSelect(['move.number', 'move.side', 'move.move'])
         .leftJoin('game.whitePlayer', 'whitePlayer', 'game.whitePlayerId IS NOT NULL')
         .addSelect(['whitePlayer.username'])
         .leftJoin('game.blackPlayer', 'blackPlayer', 'game.blackPlayerId IS NOT NULL')
@@ -133,12 +133,12 @@ export class GamesService {
     const body1 = { fen, turn, result };
     await qr.manager.update(Game, game.id, body1);
 
-    const moveNumber = game.moves + 1;
-    const body2 = { gameId: game.id, moveNumber, turn: game.turn, move };
+    const number = game.moves + 1;
+    const body2 = { gameId: game.id, number, side: game.turn, move };
     const entity = this.moveRepo.create(body2);
     await qr.manager.save(entity);
 
-    return { fen, turn, result, moves: moveNumber };
+    return { fen, turn, result, moves: number };
   }
 
   async delete(id: string) {
