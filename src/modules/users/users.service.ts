@@ -50,7 +50,7 @@ export class UsersService {
     try {
       return this.userRepo.findOne({
         where: { email },
-        select: ['username', 'email'],
+        select: ['id', 'username', 'email'],
       });
     } catch (err) {
       if (err instanceof HttpException) throw err;
