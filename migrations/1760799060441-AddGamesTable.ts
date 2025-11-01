@@ -35,6 +35,7 @@ export class AddGamesTable1760799060441 implements MigrationInterface {
             name: 'turn',
             type: enumChessSide,
             isNullable: false,
+            default: 'w',
           },
           {
             name: 'result',

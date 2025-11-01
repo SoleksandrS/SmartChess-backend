@@ -25,7 +25,7 @@ export class GamesService {
   ) {}
 
   private getInitBody<T>(body: T) {
-    return { ...body, fen: constants.chess.initFen, turn: EChessSide.WHITE };
+    return { ...body, fen: constants.chess.initFen };
   }
 
   private switchSide(side: EChessSide) {
