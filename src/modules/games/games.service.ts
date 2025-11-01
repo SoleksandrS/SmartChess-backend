@@ -62,6 +62,10 @@ export class GamesService {
         .createQueryBuilder('game')
         .innerJoin('game.moves', 'move')
         .addSelect(['move.moveNumber', 'move.turn', 'move.move'])
+        .leftJoin('game.whitePlayer', 'whitePlayer', 'game.whitePlayerId IS NOT NULL')
+        .addSelect(['whitePlayer.username'])
+        .leftJoin('game.blackPlayer', 'blackPlayer', 'game.blackPlayerId IS NOT NULL')
+        .addSelect(['blackPlayer.username'])
         .where('game.id = :id', { id })
         .getOne();
     } catch (err) {
