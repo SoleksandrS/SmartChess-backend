@@ -58,8 +58,12 @@ export class GamesService {
 
   async findOne(id: string) {
     try {
-      const res = await this.gameRepo.findOneBy({ id });
-      return res;
+      return this.gameRepo
+        .createQueryBuilder('game')
+        .innerJoin('game.moves', 'move')
+        .addSelect(['move.moveNumber', 'move.turn', 'move.move'])
+        .where('game.id = :id', { id })
+        .getOne();
     } catch (err) {
       if (err instanceof HttpException) throw err;
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
