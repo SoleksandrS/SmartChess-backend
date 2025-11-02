@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Game } from './entities/game.entity';
 import { GameMove } from './entities/game-move.entity';
@@ -13,9 +13,10 @@ import { SocketModule } from '../socket/socket.module';
     TypeOrmModule.forFeature([Game, GameMove]),
     ChessEngineModule,
     UsersModule,
-    SocketModule,
+    forwardRef(() => SocketModule),
   ],
   controllers: [GamesController],
   providers: [GamesService],
+  exports: [GamesService],
 })
 export class GamesModule {}

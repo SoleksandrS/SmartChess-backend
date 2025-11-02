@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { constants } from 'src/config';
@@ -23,7 +23,7 @@ export class GamesService {
     private chessEngineService: ChessEngineService,
     @Inject(UsersService)
     private usersService: UsersService,
-    @Inject(SocketService)
+    @Inject(forwardRef(() => SocketService))
     private socketService: SocketService,
   ) {}
 
@@ -50,6 +50,14 @@ export class GamesService {
     if (!player)
       throw new HttpException('Player not found', HttpStatus.NOT_FOUND);
     return player;
+  }
+
+  findOneSimple(id: string) {
+    return this.gameRepo
+      .createQueryBuilder('game')
+      .select(['game.id', 'game.whitePlayerId', 'game.blackPlayerId'])
+      .where('game.id = :id', { id })
+      .getOne();
   }
 
   async findOne(id: string) {
