@@ -54,7 +54,7 @@ export class GamesService {
       return this.gameRepo
         .createQueryBuilder('game')
         .innerJoin('game.moves', 'move')
-        .addSelect(['move.number', 'move.side', 'move.move'])
+        .addSelect(['move.number', 'move.side', 'move.move', 'move.fenAfter'])
         .leftJoin(
           'game.whitePlayer',
           'whitePlayer',
@@ -128,6 +128,7 @@ export class GamesService {
           number: obj.number,
           side: obj.side,
           move: obj.move,
+          fenAfter: obj.fenAfter,
         })),
       };
     } catch (err) {
@@ -161,6 +162,7 @@ export class GamesService {
       number: game.moveNumber,
       side: game.turn,
       move,
+      fenAfter: fen,
     };
     const entity = this.moveRepo.create(body2);
     await qr.manager.save(entity);

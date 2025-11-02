@@ -26,6 +26,9 @@ export class GameMove {
   @Column({ type: 'varchar', nullable: false })
   move: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  fenAfter: string;
+
   @CreateDateColumn({ type: 'timestamptz', default: () => 'now()' })
   createdAt: Date;
 }

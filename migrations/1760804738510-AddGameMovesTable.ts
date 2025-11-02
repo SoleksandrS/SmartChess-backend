@@ -36,6 +36,11 @@ export class AddGameMovesTable1760804738510 implements MigrationInterface {
             isNullable: false,
           },
           {
+            name: 'fenAfter',
+            type: 'varchar',
+            isNullable: true,
+          },
+          {
             name: 'createdAt',
             type: 'timestamptz',
             default: 'CURRENT_TIMESTAMP',
