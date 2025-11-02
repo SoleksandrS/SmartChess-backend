@@ -4,19 +4,30 @@ import { ESocketEvent } from './socket.types';
 
 @Injectable()
 export class SocketService {
-  private static connectedClients: Map<number, Socket> = new Map();
+  private static connectedClients: Map<number, Socket[]> = new Map();
+
+  addSocketToList(id: number, socket: Socket): void {
+    const sockets = SocketService.connectedClients.get(id);
+    SocketService.connectedClients.set(id, [...(sockets || []), socket]);
+  }
+
+  removeSocketFromList(id: number, socket: Socket): void {
+    const sockets = SocketService.connectedClients.get(id);
+    const filtered = (sockets || []).filter((exist) => exist.id !== socket.id);
+    SocketService.connectedClients.set(id, filtered);
+  }
 
   handleConnection(id: number, socket: Socket): void {
-    SocketService.connectedClients.set(id, socket);
+    this.addSocketToList(id, socket);
 
     socket.on(ESocketEvent.DISCONNECT, () => {
-      SocketService.connectedClients.delete(id);
+      this.removeSocketFromList(id, socket);
     });
   }
 
-  sendMessage(id: number, event: ESocketEvent, data: any) {
-    const socket = SocketService.connectedClients.get(id);
-    if (socket) socket.emit(event, data);
+  sendMessage<T>(id: number, event: ESocketEvent, data: T) {
+    const sockets = SocketService.connectedClients.get(id);
+    (sockets || []).forEach((socket) => socket.emit(event, data));
   }
 
   sendGameUpdate<T>(id: number, data: T) {
