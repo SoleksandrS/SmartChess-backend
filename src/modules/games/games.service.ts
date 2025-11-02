@@ -102,22 +102,33 @@ export class GamesService {
       if (!game)
         throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
 
+      const moves: GameMove[] = [];
+
       const res1 = await this.makeMove(game, move, qr);
-      game = { ...game, ...res1 };
+      game = { ...game, ...res1.values };
+      moves.push(res1.move);
 
       const isAIMove = this.checkIsAITurn(game);
       if (isAIMove && !game.result) {
         const res2 = await this.makeAIMove(game, qr);
-        game = { ...game, ...res2 };
+        game = { ...game, ...res2.values };
+        moves.push(res2.move);
       }
 
       await qr.commitTransaction();
 
       return {
-        fen: game.fen,
-        moveNumber: game.moveNumber,
-        turn: game.turn,
-        result: game.result,
+        values: {
+          fen: game.fen,
+          moveNumber: game.moveNumber,
+          turn: game.turn,
+          result: game.result,
+        },
+        moves: moves.map((obj) => ({
+          number: obj.number,
+          side: obj.side,
+          move: obj.move,
+        })),
       };
     } catch (err) {
       await qr.rollbackTransaction();
@@ -154,7 +165,7 @@ export class GamesService {
     const entity = this.moveRepo.create(body2);
     await qr.manager.save(entity);
 
-    return { fen, moveNumber, turn, result };
+    return { values: { fen, moveNumber, turn, result }, move: entity };
   }
 
   async delete(id: string) {
