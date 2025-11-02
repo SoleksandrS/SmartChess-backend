@@ -7,6 +7,7 @@ import { Game } from './entities/game.entity';
 import { GameMove } from './entities/game-move.entity';
 import { ChessEngineService } from 'src/shared/chess-engine/chess-engine.service';
 import { UsersService } from '../users/users.service';
+import { SocketService } from '../socket/socket.service';
 import { CreateGameDto } from './dto/create-game.dto';
 import { TGameCheckAITurn } from './games.types';
 
@@ -22,6 +23,8 @@ export class GamesService {
     private chessEngineService: ChessEngineService,
     @Inject(UsersService)
     private usersService: UsersService,
+    @Inject(SocketService)
+    private socketService: SocketService,
   ) {}
 
   private getInitBody<T>(body: T) {
@@ -119,7 +122,7 @@ export class GamesService {
 
       await qr.commitTransaction();
 
-      return {
+      const body = {
         values: {
           fen: game.fen,
           moveNumber: game.moveNumber,
@@ -133,6 +136,13 @@ export class GamesService {
           fenAfter: obj.fenAfter,
         })),
       };
+
+      if (game.whitePlayerId)
+        this.socketService.sendGameUpdate(game.whitePlayerId, body);
+      if (game.blackPlayerId)
+        this.socketService.sendGameUpdate(game.blackPlayerId, body);
+
+      return true;
     } catch (err) {
       await qr.rollbackTransaction();
       if (err instanceof HttpException) throw err;

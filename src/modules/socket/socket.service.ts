@@ -18,4 +18,8 @@ export class SocketService {
     const socket = SocketService.connectedClients.get(id);
     if (socket) socket.emit(event, data);
   }
+
+  sendGameUpdate<T>(id: number, data: T) {
+    this.sendMessage(id, ESocketEvent.UPDATE_GAME, data);
+  }
 }

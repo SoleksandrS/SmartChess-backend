@@ -6,12 +6,14 @@ import { GamesService } from './games.service';
 import { GamesController } from './games.controller';
 import { ChessEngineModule } from 'src/shared/chess-engine/chess-engine.module';
 import { UsersModule } from '../users/users.module';
+import { SocketModule } from '../socket/socket.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Game, GameMove]),
     ChessEngineModule,
     UsersModule,
+    SocketModule,
   ],
   controllers: [GamesController],
   providers: [GamesService],
