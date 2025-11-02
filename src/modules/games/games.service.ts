@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { constants } from 'src/config';
@@ -7,6 +7,7 @@ import { Game } from './entities/game.entity';
 import { GameMove } from './entities/game-move.entity';
 import { ChessEngineService } from 'src/shared/chess-engine/chess-engine.service';
 import { UsersService } from '../users/users.service';
+import { SocketService } from '../socket/socket.service';
 import { CreateGameDto } from './dto/create-game.dto';
 import { TGameCheckAITurn } from './games.types';
 
@@ -22,6 +23,8 @@ export class GamesService {
     private chessEngineService: ChessEngineService,
     @Inject(UsersService)
     private usersService: UsersService,
+    @Inject(forwardRef(() => SocketService))
+    private socketService: SocketService,
   ) {}
 
   private getInitBody<T>(body: T) {
@@ -47,6 +50,14 @@ export class GamesService {
     if (!player)
       throw new HttpException('Player not found', HttpStatus.NOT_FOUND);
     return player;
+  }
+
+  findOneSimple(id: string) {
+    return this.gameRepo
+      .createQueryBuilder('game')
+      .select(['game.id', 'game.whitePlayerId', 'game.blackPlayerId'])
+      .where('game.id = :id', { id })
+      .getOne();
   }
 
   async findOne(id: string) {
@@ -119,7 +130,7 @@ export class GamesService {
 
       await qr.commitTransaction();
 
-      return {
+      const body = {
         values: {
           fen: game.fen,
           moveNumber: game.moveNumber,
@@ -133,6 +144,10 @@ export class GamesService {
           fenAfter: obj.fenAfter,
         })),
       };
+
+      this.socketService.sendGameUpdate(id, body);
+
+      return true;
     } catch (err) {
       await qr.rollbackTransaction();
       if (err instanceof HttpException) throw err;
