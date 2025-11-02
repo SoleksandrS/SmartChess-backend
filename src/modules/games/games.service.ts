@@ -68,6 +68,8 @@ export class GamesService {
         )
         .addSelect(['blackPlayer.username'])
         .where('game.id = :id', { id })
+        .addOrderBy('move.number', 'DESC')
+        .addOrderBy('move.side', 'DESC')
         .getOne();
     } catch (err) {
       if (err instanceof HttpException) throw err;
@@ -106,13 +108,13 @@ export class GamesService {
 
       const res1 = await this.makeMove(game, move, qr);
       game = { ...game, ...res1.values };
-      moves.push(res1.move);
+      moves.unshift(res1.move);
 
       const isAIMove = this.checkIsAITurn(game);
       if (isAIMove && !game.result) {
         const res2 = await this.makeAIMove(game, qr);
         game = { ...game, ...res2.values };
-        moves.push(res2.move);
+        moves.unshift(res2.move);
       }
 
       await qr.commitTransaction();
