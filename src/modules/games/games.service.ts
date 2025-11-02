@@ -53,7 +53,7 @@ export class GamesService {
     try {
       return this.gameRepo
         .createQueryBuilder('game')
-        .innerJoin('game.moves', 'move')
+        .leftJoin('game.moves', 'move')
         .addSelect(['move.number', 'move.side', 'move.move', 'move.fenAfter'])
         .leftJoin(
           'game.whitePlayer',
