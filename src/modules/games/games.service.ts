@@ -137,10 +137,7 @@ export class GamesService {
         })),
       };
 
-      if (game.whitePlayerId)
-        this.socketService.sendGameUpdate(game.whitePlayerId, body);
-      if (game.blackPlayerId)
-        this.socketService.sendGameUpdate(game.blackPlayerId, body);
+      this.socketService.sendGameUpdate(id, body);
 
       return true;
     } catch (err) {

@@ -8,8 +8,9 @@ import {
 import { Server, Socket } from 'socket.io';
 import { ESocketEvent } from './socket.types';
 import { SocketService } from './socket.service';
+import { EChessSide } from 'src/types/chess.types';
 
-@WebSocketGateway()
+@WebSocketGateway({ cors: true })
 export class SocketGateway {
   @WebSocketServer()
   server: Server;
@@ -22,5 +23,13 @@ export class SocketGateway {
     @ConnectedSocket() client: Socket,
   ) {
     this.socketService.handleConnection(body.id, client);
+  }
+
+  @SubscribeMessage(ESocketEvent.JOIN_TO_GAME)
+  handleJoin(
+    @MessageBody() body: { gameId: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.socketService.joinToGame(body.gameId, EChessSide.WHITE, client);
   }
 }
