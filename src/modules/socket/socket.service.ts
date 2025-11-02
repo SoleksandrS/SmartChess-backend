@@ -23,6 +23,8 @@ export class SocketService {
     socket.on(ESocketEvent.DISCONNECT, () => {
       this.removeSocketFromList(id, socket);
     });
+
+    socket.emit(ESocketEvent.MAIN_CONNECT, true);
   }
 
   sendMessage<T>(id: number, event: ESocketEvent, data: T) {
