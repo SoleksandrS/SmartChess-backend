@@ -8,7 +8,7 @@ import { GameMove } from './entities/game-move.entity';
 import { ChessEngineService } from 'src/shared/chess-engine/chess-engine.service';
 import { UsersService } from '../users/users.service';
 import { CreateGameDto } from './dto/create-game.dto';
-import { IGameCountMoves, TGameCheckAITurn } from './games.types';
+import { TGameCheckAITurn } from './games.types';
 
 @Injectable()
 export class GamesService {
@@ -49,22 +49,23 @@ export class GamesService {
     return player;
   }
 
-  private async getGameCountMoves(id: string): Promise<IGameCountMoves> {
-    const params = { where: { id }, relations: ['moves'] };
-    const game = await this.gameRepo.findOne(params);
-    if (!game) throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
-    return { ...game, moves: game.moves.length };
-  }
-
   async findOne(id: string) {
     try {
       return this.gameRepo
         .createQueryBuilder('game')
         .innerJoin('game.moves', 'move')
         .addSelect(['move.number', 'move.side', 'move.move'])
-        .leftJoin('game.whitePlayer', 'whitePlayer', 'game.whitePlayerId IS NOT NULL')
+        .leftJoin(
+          'game.whitePlayer',
+          'whitePlayer',
+          'game.whitePlayerId IS NOT NULL',
+        )
         .addSelect(['whitePlayer.username'])
-        .leftJoin('game.blackPlayer', 'blackPlayer', 'game.blackPlayerId IS NOT NULL')
+        .leftJoin(
+          'game.blackPlayer',
+          'blackPlayer',
+          'game.blackPlayerId IS NOT NULL',
+        )
         .addSelect(['blackPlayer.username'])
         .where('game.id = :id', { id })
         .getOne();
@@ -97,7 +98,9 @@ export class GamesService {
     await qr.startTransaction();
 
     try {
-      let game = await this.getGameCountMoves(id);
+      let game = await this.gameRepo.findOneBy({ id });
+      if (!game)
+        throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
 
       const res1 = await this.makeMove(game, move, qr);
       game = { ...game, ...res1 };
@@ -110,7 +113,12 @@ export class GamesService {
 
       await qr.commitTransaction();
 
-      return { fen: game.fen, turn: game.turn, result: game.result };
+      return {
+        fen: game.fen,
+        moveNumber: game.moveNumber,
+        turn: game.turn,
+        result: game.result,
+      };
     } catch (err) {
       await qr.rollbackTransaction();
       if (err instanceof HttpException) throw err;
@@ -120,25 +128,33 @@ export class GamesService {
     }
   }
 
-  async makeAIMove(game: IGameCountMoves, qr: QueryRunner) {
+  async makeAIMove(game: Game, qr: QueryRunner) {
     const move = await this.chessEngineService.getBestMove(game.fen);
     return this.makeMove(game, move, qr);
   }
 
-  async makeMove(game: IGameCountMoves, move: string, qr: QueryRunner) {
+  async makeMove(game: Game, move: string, qr: QueryRunner) {
     const fen = this.chessEngineService.makeMove(game.fen, move);
     const result = this.chessEngineService.checkGameStatus(fen);
 
-    const turn = !result ? this.switchSide(game.turn as EChessSide) : game.turn;
-    const body1 = { fen, turn, result };
+    const turn = !result ? this.switchSide(game.turn) : game.turn;
+    let moveNumber = game.moveNumber;
+    if (turn === EChessSide.WHITE && game.turn === EChessSide.BLACK)
+      moveNumber += 1;
+
+    const body1 = { fen, moveNumber, turn, result };
     await qr.manager.update(Game, game.id, body1);
 
-    const number = game.moves + 1;
-    const body2 = { gameId: game.id, number, side: game.turn, move };
+    const body2 = {
+      gameId: game.id,
+      number: game.moveNumber,
+      side: game.turn,
+      move,
+    };
     const entity = this.moveRepo.create(body2);
     await qr.manager.save(entity);
 
-    return { fen, turn, result, moves: number };
+    return { fen, moveNumber, turn, result };
   }
 
   async delete(id: string) {
