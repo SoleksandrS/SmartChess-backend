@@ -28,7 +28,7 @@ export class AddGameMovesTable1760804738510 implements MigrationInterface {
           {
             name: 'side',
             type: enumChessSide,
-            isNullable: false,
+            isPrimary: true,
           },
           {
             name: 'move',

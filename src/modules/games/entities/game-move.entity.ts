@@ -20,7 +20,7 @@ export class GameMove {
   @PrimaryColumn()
   number: number;
 
-  @Column({ type: 'enum', enum: EChessSide, nullable: false })
+  @PrimaryColumn({ type: 'enum', enum: EChessSide, nullable: false })
   side: EChessSide;
 
   @Column({ type: 'varchar', nullable: false })
