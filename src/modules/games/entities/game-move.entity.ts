@@ -6,6 +6,7 @@ import {
   ManyToOne,
   PrimaryColumn,
 } from 'typeorm';
+import { EChessSide } from 'src/types/chess.types';
 import { Game } from './game.entity';
 
 @Entity('game-moves')
@@ -17,13 +18,16 @@ export class GameMove {
   gameId: string;
 
   @PrimaryColumn()
-  moveNumber: number;
+  number: number;
 
-  @Column({ type: 'varchar', nullable: false })
-  turn: string;
+  @PrimaryColumn({ type: 'enum', enum: EChessSide, nullable: false })
+  side: EChessSide;
 
   @Column({ type: 'varchar', nullable: false })
   move: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  fenAfter: string;
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'now()' })
   createdAt: Date;

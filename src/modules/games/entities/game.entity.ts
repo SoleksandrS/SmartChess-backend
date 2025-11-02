@@ -9,6 +9,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { EChessResult, EChessSide } from 'src/types/chess.types';
 import { User } from 'src/modules/users/entities/user.entity';
 import { GameMove } from './game-move.entity';
 
@@ -20,11 +21,14 @@ export class Game {
   @Column({ type: 'varchar', nullable: false })
   fen: string;
 
-  @Column({ type: 'varchar', nullable: false })
-  turn: string;
+  @Column({ type: 'int', nullable: false })
+  moveNumber: number;
 
-  @Column({ type: 'varchar', nullable: true })
-  result: string;
+  @Column({ type: 'enum', enum: EChessSide, nullable: false })
+  turn: EChessSide;
+
+  @Column({ type: 'enum', enum: EChessResult, nullable: true })
+  result: EChessResult;
 
   @ManyToOne(() => User, (entity) => entity.id)
   @JoinColumn({ name: 'whitePlayerId' })

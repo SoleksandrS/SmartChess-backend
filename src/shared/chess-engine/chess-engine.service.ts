@@ -1,11 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Chess } from 'chess.js';
 import axios from 'axios';
-import {
-  EChessResult,
-  regexBestMove,
-  StockfishAnalysis,
-} from './chess-engine.types';
+import { EChessResult } from 'src/types/chess.types';
+import { regexBestMove, StockfishAnalysis } from './chess-engine.types';
 
 @Injectable()
 export class ChessEngineService {

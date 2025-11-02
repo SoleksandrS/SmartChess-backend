@@ -7,6 +7,7 @@ import {
 
 const tableGameMoves = 'game-moves';
 const tableGames = 'games';
+const enumChessSide = 'chess_side_enum';
 
 export class AddGameMovesTable1760804738510 implements MigrationInterface {
   public async up(qr: QueryRunner): Promise<void> {
@@ -20,19 +21,24 @@ export class AddGameMovesTable1760804738510 implements MigrationInterface {
             isPrimary: true,
           },
           {
-            name: 'moveNumber',
+            name: 'number',
             type: 'int',
             isPrimary: true,
           },
           {
-            name: 'turn',
-            type: 'varchar',
-            isNullable: false,
+            name: 'side',
+            type: enumChessSide,
+            isPrimary: true,
           },
           {
             name: 'move',
             type: 'varchar',
             isNullable: false,
+          },
+          {
+            name: 'fenAfter',
+            type: 'varchar',
+            isNullable: true,
           },
           {
             name: 'createdAt',

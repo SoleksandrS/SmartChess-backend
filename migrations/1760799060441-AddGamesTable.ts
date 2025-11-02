@@ -4,9 +4,12 @@ import {
   Table,
   TableForeignKey,
 } from 'typeorm';
+import { EChessSide } from 'src/types/chess.types';
 
 const tableGames = 'games';
 const tableUsers = 'users';
+const enumChessSide = 'chess_side_enum';
+const enumChessResult = 'chess_result_enum';
 
 export class AddGamesTable1760799060441 implements MigrationInterface {
   public async up(qr: QueryRunner): Promise<void> {
@@ -27,13 +30,20 @@ export class AddGamesTable1760799060441 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: 'turn',
-            type: 'varchar',
+            name: 'moveNumber',
+            type: 'int',
             isNullable: false,
+            default: 1,
+          },
+          {
+            name: 'turn',
+            type: enumChessSide,
+            isNullable: false,
+            default: `'${EChessSide.WHITE}'`,
           },
           {
             name: 'result',
-            type: 'varchar',
+            type: enumChessResult,
             isNullable: true,
             default: null,
           },
