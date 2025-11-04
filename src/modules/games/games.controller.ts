@@ -37,8 +37,12 @@ export class GamesController {
   }
 
   @Put(':id/move')
-  makeMove(@Param('id') id: string, @Body() { move }: MakeMoveDto) {
-    return this.service.complexMakeMove(id, move);
+  makeMove(
+    @Req() req: IRequest,
+    @Param('id') id: string,
+    @Body() { move }: MakeMoveDto,
+  ) {
+    return this.service.complexMakeMove(id, move, req.user.email);
   }
 
   @Delete(':id')
