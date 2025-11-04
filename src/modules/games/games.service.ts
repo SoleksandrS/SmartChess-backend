@@ -1,4 +1,11 @@
-import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
+import { isUUID } from 'class-validator';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { constants } from 'src/config';
@@ -61,6 +68,9 @@ export class GamesService {
   }
 
   async findOne(id: string) {
+    if (!isUUID(id))
+      throw new HttpException('Invalid UUID format', HttpStatus.BAD_REQUEST);
+
     try {
       return this.gameRepo
         .createQueryBuilder('game')
@@ -106,6 +116,9 @@ export class GamesService {
   }
 
   async complexMakeMove(id: string, move: string) {
+    if (!isUUID(id))
+      throw new HttpException('Invalid UUID format', HttpStatus.BAD_REQUEST);
+
     const qr = this.dataSource.createQueryRunner();
     await qr.connect();
     await qr.startTransaction();
@@ -188,6 +201,9 @@ export class GamesService {
   }
 
   async delete(id: string) {
+    if (!isUUID(id))
+      throw new HttpException('Invalid UUID format', HttpStatus.BAD_REQUEST);
+
     try {
       const res = await this.gameRepo.softDelete(id);
       return res;
@@ -198,6 +214,9 @@ export class GamesService {
   }
 
   async restore(id: string) {
+    if (!isUUID(id))
+      throw new HttpException('Invalid UUID format', HttpStatus.BAD_REQUEST);
+
     try {
       const res = await this.gameRepo.restore(id);
       return res;
