@@ -67,12 +67,16 @@ export class GamesService {
       .getOne();
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, email: string) {
     if (!isUUID(id))
       throw new HttpException('Invalid UUID format', HttpStatus.BAD_REQUEST);
 
     try {
-      return this.gameRepo
+      const user = await this.usersService.findWithWhere({ email });
+      if (!user)
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+      const game = await this.gameRepo
         .createQueryBuilder('game')
         .leftJoin('game.moves', 'move')
         .addSelect(['move.number', 'move.side', 'move.move', 'move.fenAfter'])
@@ -89,9 +93,17 @@ export class GamesService {
         )
         .addSelect(['blackPlayer.username'])
         .where('game.id = :id', { id })
+        .andWhere(
+          '(game.whitePlayerId = :userId OR game.blackPlayerId = :userId)',
+          { userId: user.id },
+        )
         .addOrderBy('move.number', 'DESC')
         .addOrderBy('move.side', 'DESC')
         .getOne();
+      if (!game)
+        throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
+
+      return game;
     } catch (err) {
       if (err instanceof HttpException) throw err;
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
