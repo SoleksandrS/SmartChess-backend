@@ -6,10 +6,12 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/guards/roles.guard';
+import { IRequest } from 'src/core/interfaces';
 import { GamesService } from './games.service';
 import { CreateGameDto } from './dto/create-game.dto';
 import { MakeMoveDto } from './dto/make-move.dto';
@@ -20,8 +22,8 @@ export class GamesController {
   constructor(private readonly service: GamesService) {}
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(id);
+  findOne(@Req() req: IRequest, @Param('id') id: string) {
+    return this.service.findOne(id, req.user.email);
   }
 
   @Post()
@@ -35,8 +37,12 @@ export class GamesController {
   }
 
   @Put(':id/move')
-  makeMove(@Param('id') id: string, @Body() { move }: MakeMoveDto) {
-    return this.service.complexMakeMove(id, move);
+  makeMove(
+    @Req() req: IRequest,
+    @Param('id') id: string,
+    @Body() { move }: MakeMoveDto,
+  ) {
+    return this.service.complexMakeMove(id, move, req.user.email);
   }
 
   @Delete(':id')

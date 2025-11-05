@@ -1,4 +1,11 @@
-import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
+import { isUUID } from 'class-validator';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { constants } from 'src/config';
@@ -60,9 +67,16 @@ export class GamesService {
       .getOne();
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, email: string) {
+    if (!isUUID(id))
+      throw new HttpException('Invalid UUID format', HttpStatus.BAD_REQUEST);
+
     try {
-      return this.gameRepo
+      const user = await this.usersService.findWithWhere({ email });
+      if (!user)
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+      const game = await this.gameRepo
         .createQueryBuilder('game')
         .leftJoin('game.moves', 'move')
         .addSelect(['move.number', 'move.side', 'move.move', 'move.fenAfter'])
@@ -79,9 +93,17 @@ export class GamesService {
         )
         .addSelect(['blackPlayer.username'])
         .where('game.id = :id', { id })
+        .andWhere(
+          '(game.whitePlayerId = :userId OR game.blackPlayerId = :userId)',
+          { userId: user.id },
+        )
         .addOrderBy('move.number', 'DESC')
         .addOrderBy('move.side', 'DESC')
         .getOne();
+      if (!game)
+        throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
+
+      return game;
     } catch (err) {
       if (err instanceof HttpException) throw err;
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -105,14 +127,23 @@ export class GamesService {
     }
   }
 
-  async complexMakeMove(id: string, move: string) {
+  async complexMakeMove(id: string, move: string, email: string) {
+    if (!isUUID(id))
+      throw new HttpException('Invalid UUID format', HttpStatus.BAD_REQUEST);
+
     const qr = this.dataSource.createQueryRunner();
     await qr.connect();
     await qr.startTransaction();
 
     try {
+      const user = await this.usersService.findWithWhere({ email });
+      if (!user)
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
       let game = await this.gameRepo.findOneBy({ id });
       if (!game)
+        throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
+      if (game.whitePlayerId !== user.id && game.blackPlayerId !== user.id)
         throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
 
       const moves: GameMove[] = [];
@@ -188,6 +219,9 @@ export class GamesService {
   }
 
   async delete(id: string) {
+    if (!isUUID(id))
+      throw new HttpException('Invalid UUID format', HttpStatus.BAD_REQUEST);
+
     try {
       const res = await this.gameRepo.softDelete(id);
       return res;
@@ -198,6 +232,9 @@ export class GamesService {
   }
 
   async restore(id: string) {
+    if (!isUUID(id))
+      throw new HttpException('Invalid UUID format', HttpStatus.BAD_REQUEST);
+
     try {
       const res = await this.gameRepo.restore(id);
       return res;
