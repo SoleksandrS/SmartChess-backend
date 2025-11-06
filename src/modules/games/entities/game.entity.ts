@@ -6,7 +6,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { EChessResult, EChessSide } from 'src/types/chess.types';
@@ -15,7 +15,7 @@ import { GameMove } from './game-move.entity';
 
 @Entity('games')
 export class Game {
-  @PrimaryColumn({ type: 'uuid' })
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'varchar', nullable: false })
