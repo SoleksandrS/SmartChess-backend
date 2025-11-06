@@ -161,7 +161,7 @@ export class GamesService {
       if (body.whitePlayerId) await this.getPlayer(body.whitePlayerId);
       if (body.blackPlayerId) await this.getPlayer(body.blackPlayerId);
 
-      const res = await this.gameRepo.insert(this.getInitBody(body));
+      const res = await this.gameRepo.save(this.getInitBody(body));
       return res;
     } catch (err) {
       if (err instanceof HttpException) throw err;
