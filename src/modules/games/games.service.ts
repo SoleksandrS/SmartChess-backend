@@ -59,6 +59,48 @@ export class GamesService {
     return player;
   }
 
+  async findMy(email: string) {
+    try {
+      const user = await this.usersService.findWithWhere({ email });
+      if (!user)
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+      const games = await this.gameRepo
+        .createQueryBuilder('game')
+        .select([
+          'game.id',
+          'game.moveNumber',
+          'game.turn',
+          'game.result',
+          'game.whitePlayerId',
+          'game.blackPlayerId',
+          'game.createdAt',
+        ])
+        .leftJoin(
+          'game.whitePlayer',
+          'whitePlayer',
+          'game.whitePlayerId IS NOT NULL',
+        )
+        .addSelect(['whitePlayer.username'])
+        .leftJoin(
+          'game.blackPlayer',
+          'blackPlayer',
+          'game.blackPlayerId IS NOT NULL',
+        )
+        .addSelect(['blackPlayer.username'])
+        .where(
+          '(game.whitePlayerId = :userId OR game.blackPlayerId = :userId)',
+          { userId: user.id },
+        )
+        .getMany();
+
+      return games;
+    } catch (err) {
+      if (err instanceof HttpException) throw err;
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   findOneSimple(id: string) {
     return this.gameRepo
       .createQueryBuilder('game')

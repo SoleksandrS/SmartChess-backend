@@ -21,6 +21,11 @@ import { MakeMoveDto } from './dto/make-move.dto';
 export class GamesController {
   constructor(private readonly service: GamesService) {}
 
+  @Get('my')
+  findMy(@Req() req: IRequest) {
+    return this.service.findMy(req.user.email);
+  }
+
   @Get(':id')
   findOne(@Req() req: IRequest, @Param('id') id: string) {
     return this.service.findOne(id, req.user.email);
