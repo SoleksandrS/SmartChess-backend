@@ -9,12 +9,13 @@ import { isUUID } from 'class-validator';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { constants } from 'src/config';
-import { EChessSide } from 'src/types/chess.types';
+import { EChessResult, EChessSide } from 'src/types/chess.types';
 import { Game } from './entities/game.entity';
 import { GameMove } from './entities/game-move.entity';
 import { ChessEngineService } from 'src/shared/chess-engine/chess-engine.service';
 import { UsersService } from '../users/users.service';
 import { SocketService } from '../socket/socket.service';
+import { EPageGamesStatus, GetMyGamesDto } from './dto/get-my-games.dto';
 import { CreateGameDto } from './dto/create-game.dto';
 import { TGameCheckAITurn } from './games.types';
 
@@ -59,13 +60,15 @@ export class GamesService {
     return player;
   }
 
-  async findMy(email: string) {
+  async findMy(query: GetMyGamesDto, email: string) {
+    const { page, limit, status } = query;
+
     try {
       const user = await this.usersService.findWithWhere({ email });
       if (!user)
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
-      const games = await this.gameRepo
+      const qb = this.gameRepo
         .createQueryBuilder('game')
         .select([
           'game.id',
@@ -91,8 +94,32 @@ export class GamesService {
         .where(
           '(game.whitePlayerId = :userId OR game.blackPlayerId = :userId)',
           { userId: user.id },
-        )
-        .getMany();
+        );
+
+      switch (status) {
+        case EPageGamesStatus.ACTIVE:
+          qb.andWhere(`game.result IS NULL`);
+          break;
+        case EPageGamesStatus.DRAW:
+          qb.andWhere(`game.result = :result`, { result: EChessResult.DRAW });
+          break;
+        case EPageGamesStatus.WIN:
+          qb.andWhere(
+            `(game.whitePlayerId = :userId AND game.turn = '${EChessSide.WHITE}' AND game.result = :result) OR (game.blackPlayerId = :userId AND game.turn = '${EChessSide.BLACK}' AND game.result = :result)`,
+            { userId: user.id, result: EChessResult.CHECKMATE },
+          );
+          break;
+        case EPageGamesStatus.LOSE:
+          qb.andWhere(
+            `(game.whitePlayerId = :userId AND game.turn = '${EChessSide.BLACK}' AND game.result = :result) OR (game.blackPlayerId = :userId AND game.turn = '${EChessSide.WHITE}' AND game.result = :result)`,
+            { userId: user.id, result: EChessResult.CHECKMATE },
+          );
+          break;
+      }
+
+      qb.skip((page - 1) * limit).take(limit);
+
+      const games = await qb.getMany();
 
       return games;
     } catch (err) {

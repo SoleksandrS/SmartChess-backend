@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -13,6 +14,7 @@ import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { IRequest } from 'src/core/interfaces';
 import { GamesService } from './games.service';
+import { GetMyGamesDto } from './dto/get-my-games.dto';
 import { CreateGameDto } from './dto/create-game.dto';
 import { MakeMoveDto } from './dto/make-move.dto';
 
@@ -22,8 +24,8 @@ export class GamesController {
   constructor(private readonly service: GamesService) {}
 
   @Get('my')
-  findMy(@Req() req: IRequest) {
-    return this.service.findMy(req.user.email);
+  findMy(@Req() req: IRequest, @Query() query: GetMyGamesDto) {
+    return this.service.findMy(query, req.user.email);
   }
 
   @Get(':id')
