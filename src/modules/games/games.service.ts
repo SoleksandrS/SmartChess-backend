@@ -8,7 +8,10 @@ import {
 import { isUUID } from 'class-validator';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 import { constants } from 'src/config';
+import { EQueue } from 'src/core/enums';
 import { EChessResult, EChessSide } from 'src/types/chess.types';
 import { Game } from './entities/game.entity';
 import { GameMove } from './entities/game-move.entity';
@@ -27,6 +30,8 @@ export class GamesService {
     private gameRepo: Repository<Game>,
     @InjectRepository(GameMove)
     private moveRepo: Repository<GameMove>,
+    @InjectQueue(EQueue.GAME_AI_MOVE)
+    private readonly gameAOMoveQueue: Queue,
     @Inject(ChessEngineService)
     private chessEngineService: ChessEngineService,
     @Inject(UsersService)
@@ -223,6 +228,7 @@ export class GamesService {
 
       const isAIMove = this.checkIsAITurn(game);
       if (isAIMove && !game.result) {
+        this.gameAOMoveQueue.add('make-move', { gameId: game.id });
         const res2 = await this.makeAIMove(game, qr);
         game = { ...game, ...res2.values };
         moves.unshift(res2.move);
