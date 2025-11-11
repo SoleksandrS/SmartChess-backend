@@ -119,9 +119,9 @@ export class GamesService {
 
       qb.skip((page - 1) * limit).take(limit);
 
-      const games = await qb.getMany();
-
-      return games;
+      const [data, total] = await qb.getManyAndCount();
+      const meta = { page, limit, total, totalPages: Math.ceil(total / limit) };
+      return { data, meta };
     } catch (err) {
       if (err instanceof HttpException) throw err;
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
