@@ -9,12 +9,13 @@ import { isUUID } from 'class-validator';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { constants } from 'src/config';
-import { EChessSide } from 'src/types/chess.types';
+import { EChessResult, EChessSide } from 'src/types/chess.types';
 import { Game } from './entities/game.entity';
 import { GameMove } from './entities/game-move.entity';
 import { ChessEngineService } from 'src/shared/chess-engine/chess-engine.service';
 import { UsersService } from '../users/users.service';
 import { SocketService } from '../socket/socket.service';
+import { EPageGamesStatus, GetMyGamesDto } from './dto/get-my-games.dto';
 import { CreateGameDto } from './dto/create-game.dto';
 import { TGameCheckAITurn } from './games.types';
 
@@ -57,6 +58,74 @@ export class GamesService {
     if (!player)
       throw new HttpException('Player not found', HttpStatus.NOT_FOUND);
     return player;
+  }
+
+  async findMy(query: GetMyGamesDto, email: string) {
+    const { page, limit, status } = query;
+
+    try {
+      const user = await this.usersService.findWithWhere({ email });
+      if (!user)
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+      const qb = this.gameRepo
+        .createQueryBuilder('game')
+        .select([
+          'game.id',
+          'game.moveNumber',
+          'game.turn',
+          'game.result',
+          'game.whitePlayerId',
+          'game.blackPlayerId',
+          'game.createdAt',
+        ])
+        .leftJoin(
+          'game.whitePlayer',
+          'whitePlayer',
+          'game.whitePlayerId IS NOT NULL',
+        )
+        .addSelect(['whitePlayer.username'])
+        .leftJoin(
+          'game.blackPlayer',
+          'blackPlayer',
+          'game.blackPlayerId IS NOT NULL',
+        )
+        .addSelect(['blackPlayer.username'])
+        .where(
+          '(game.whitePlayerId = :userId OR game.blackPlayerId = :userId)',
+          { userId: user.id },
+        );
+
+      switch (status) {
+        case EPageGamesStatus.ACTIVE:
+          qb.andWhere(`game.result IS NULL`);
+          break;
+        case EPageGamesStatus.DRAW:
+          qb.andWhere(`game.result = :result`, { result: EChessResult.DRAW });
+          break;
+        case EPageGamesStatus.WIN:
+          qb.andWhere(
+            `(game.whitePlayerId = :userId AND game.turn = '${EChessSide.WHITE}' AND game.result = :result) OR (game.blackPlayerId = :userId AND game.turn = '${EChessSide.BLACK}' AND game.result = :result)`,
+            { userId: user.id, result: EChessResult.CHECKMATE },
+          );
+          break;
+        case EPageGamesStatus.LOSE:
+          qb.andWhere(
+            `(game.whitePlayerId = :userId AND game.turn = '${EChessSide.BLACK}' AND game.result = :result) OR (game.blackPlayerId = :userId AND game.turn = '${EChessSide.WHITE}' AND game.result = :result)`,
+            { userId: user.id, result: EChessResult.CHECKMATE },
+          );
+          break;
+      }
+
+      qb.skip((page - 1) * limit).take(limit);
+
+      const [data, total] = await qb.getManyAndCount();
+      const meta = { page, limit, total, totalPages: Math.ceil(total / limit) };
+      return { data, meta };
+    } catch (err) {
+      if (err instanceof HttpException) throw err;
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   findOneSimple(id: string) {
@@ -119,7 +188,7 @@ export class GamesService {
       if (body.whitePlayerId) await this.getPlayer(body.whitePlayerId);
       if (body.blackPlayerId) await this.getPlayer(body.blackPlayerId);
 
-      const res = await this.gameRepo.insert(this.getInitBody(body));
+      const res = await this.gameRepo.save(this.getInitBody(body));
       return res;
     } catch (err) {
       if (err instanceof HttpException) throw err;
