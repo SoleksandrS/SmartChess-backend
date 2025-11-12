@@ -6,7 +6,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { isUUID } from 'class-validator';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
