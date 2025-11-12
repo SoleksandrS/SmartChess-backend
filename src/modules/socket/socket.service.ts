@@ -3,7 +3,6 @@ import { Socket } from 'socket.io';
 import { ESocketEvent } from './socket.types';
 import { GamesService } from '../games/games.service';
 import { GameRoom } from './classes/GameRoom';
-import { EChessSide } from 'src/types/chess.types';
 
 @Injectable()
 export class SocketService {
