@@ -10,3 +10,16 @@ services:
     volumes:
       - ./volumes/pgdata:/var/lib/postgresql/data
       - ./init-db:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    env_file:
+      - ./.env
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:

@@ -12,4 +12,8 @@ export const constants = {
 export const envs = {
   port: parseInt(process.env.PORT, 10) || 3000,
   jwtSecret: process.env.JWT_SECRET || 'super-secret-key',
+  redis: {
+    host: process.env.REDIS_HOST || 'redis',
+    port: parseInt(process.env.REDIS_PORT, 10) || 6379,
+  },
 };

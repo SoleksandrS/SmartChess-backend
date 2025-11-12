@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BullModule } from '@nestjs/bull';
+import { envs } from './config';
 import { SocketModule } from './modules/socket/socket.module';
 import { HeartbeatModule } from './modules/heartbeat/heartbeat.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -17,6 +19,9 @@ import { GamesModule } from './modules/games/games.module';
       password: process.env.POSTGRES_PASSWORD,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: false,
+    }),
+    BullModule.forRoot({
+      redis: { host: envs.redis.host, port: envs.redis.port },
     }),
     SocketModule,
     HeartbeatModule,
