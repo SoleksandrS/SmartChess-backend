@@ -205,10 +205,6 @@ export class GamesService {
     if (!isUUID(id))
       throw new HttpException('Invalid UUID format', HttpStatus.BAD_REQUEST);
 
-    const qr = this.dataSource.createQueryRunner();
-    await qr.connect();
-    await qr.startTransaction();
-
     try {
       const user = await this.usersService.findWithWhere({ email });
       if (!user)
@@ -220,77 +216,72 @@ export class GamesService {
       if (game.whitePlayerId !== user.id && game.blackPlayerId !== user.id)
         throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
 
-      const moves: GameMove[] = [];
-
-      const res1 = await this.makeMove(game, move, qr);
+      const res1 = await this.makeMove(game, move);
       game = { ...game, ...res1.values };
-      moves.unshift(res1.move);
 
       const isAIMove = this.checkIsAITurn(game);
       if (isAIMove && !game.result) {
         this.gameAOMoveQueue.add('make-move', { gameId: game.id });
-        const res2 = await this.makeAIMove(game, qr);
-        game = { ...game, ...res2.values };
-        moves.unshift(res2.move);
       }
-
-      await qr.commitTransaction();
-
-      const body = {
-        values: {
-          fen: game.fen,
-          moveNumber: game.moveNumber,
-          turn: game.turn,
-          result: game.result,
-        },
-        moves: moves.map((obj) => ({
-          number: obj.number,
-          side: obj.side,
-          move: obj.move,
-          fenAfter: obj.fenAfter,
-        })),
-      };
-
-      this.socketService.sendGameUpdate(id, body);
 
       return true;
     } catch (err) {
-      await qr.rollbackTransaction();
       if (err instanceof HttpException) throw err;
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    } finally {
-      await qr.release();
     }
   }
 
-  async makeAIMove(game: Game, qr: QueryRunner) {
+  async makeAIMove(id: string) {
+    let game = await this.gameRepo.findOneBy({ id });
+    if (!game) throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
+
+    const isAIMove = this.checkIsAITurn(game);
+    if (!isAIMove || game.result)
+      throw new HttpException('It`s not AI`s turn now', HttpStatus.CONFLICT);
+
     const move = await this.chessEngineService.getBestMove(game.fen);
-    return this.makeMove(game, move, qr);
+    await this.makeMove(game, move);
   }
 
-  async makeMove(game: Game, move: string, qr: QueryRunner) {
-    const fen = this.chessEngineService.makeMove(game.fen, move);
-    const result = this.chessEngineService.checkGameStatus(fen);
+  async makeMove(game: Game, move: string) {
+    const qr = this.dataSource.createQueryRunner();
+    await qr.connect();
+    await qr.startTransaction();
 
-    const turn = !result ? this.switchSide(game.turn) : game.turn;
-    let moveNumber = game.moveNumber;
-    if (turn === EChessSide.WHITE && game.turn === EChessSide.BLACK)
-      moveNumber += 1;
+    try {
+      const fen = this.chessEngineService.makeMove(game.fen, move);
+      const result = this.chessEngineService.checkGameStatus(fen);
 
-    const body1 = { fen, moveNumber, turn, result };
-    await qr.manager.update(Game, game.id, body1);
+      const turn = !result ? this.switchSide(game.turn) : game.turn;
+      let moveNumber = game.moveNumber;
+      if (turn === EChessSide.WHITE && game.turn === EChessSide.BLACK)
+        moveNumber += 1;
 
-    const body2 = {
-      gameId: game.id,
-      number: game.moveNumber,
-      side: game.turn,
-      move,
-      fenAfter: fen,
-    };
-    const entity = this.moveRepo.create(body2);
-    await qr.manager.save(entity);
+      const body1 = { fen, moveNumber, turn, result };
+      await qr.manager.update(Game, game.id, body1);
 
-    return { values: { fen, moveNumber, turn, result }, move: entity };
+      const body2 = {
+        gameId: game.id,
+        number: game.moveNumber,
+        side: game.turn,
+        move,
+        fenAfter: fen,
+      };
+      const entity = this.moveRepo.create(body2);
+      await qr.manager.save(entity);
+
+      await qr.commitTransaction();
+
+      const body = { values: { fen, moveNumber, turn, result }, move: entity };
+      this.socketService.sendGameUpdate(game.id, body);
+
+      return body;
+    } catch (err) {
+      await qr.rollbackTransaction();
+      throw err;
+    } finally {
+      await qr.release();
+    }
   }
 
   async delete(id: string) {
