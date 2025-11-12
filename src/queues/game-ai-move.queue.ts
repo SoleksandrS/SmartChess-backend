@@ -9,6 +9,11 @@ export class GameAIMoveQueue {
 
   @Process('make-move')
   async handleSendEmail(job: Job<{ gameId: string }>) {
-    console.log('Make move for game', job.data);
+    try {
+      await this.gamesService.makeAIMove(job.data.gameId);
+    } catch (err) {
+      const msg = `error occurred with game #${job.data.gameId}:`;
+      console.log(`[GameAIMove Queue] ${msg}`, err);
+    }
   }
 }
