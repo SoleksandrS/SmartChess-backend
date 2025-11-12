@@ -10,6 +10,7 @@ import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import * as _ from 'lodash';
 import { constants } from 'src/config';
 import { EQueue } from 'src/core/enums';
 import { EChessResult, EChessSide } from 'src/types/chess.types';
@@ -272,7 +273,10 @@ export class GamesService {
 
       await qr.commitTransaction();
 
-      const body = { values: { fen, moveNumber, turn, result }, move: entity };
+      const body = {
+        values: { fen, moveNumber, turn, result },
+        move: _.pick(entity, ['number', 'side', 'move', 'fenAfter']),
+      };
       this.socketService.sendGameUpdate(game.id, body);
 
       return body;
