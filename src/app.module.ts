@@ -22,6 +22,10 @@ import { GamesModule } from './modules/games/games.module';
     }),
     BullModule.forRoot({
       redis: { host: envs.redis.host, port: envs.redis.port },
+      defaultJobOptions: {
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
     }),
     SocketModule,
     HeartbeatModule,
