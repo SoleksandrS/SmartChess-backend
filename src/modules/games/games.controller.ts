@@ -33,6 +33,11 @@ export class GamesController {
     return this.service.findOne(id, req.user.email);
   }
 
+  @Get(':id/advice')
+  getAdvice(@Req() req: IRequest, @Param('id') id: string) {
+    return this.service.getAdvice(id, req.user.email);
+  }
+
   @Post()
   create(@Body() body: CreateGameDto) {
     return this.service.create(body);

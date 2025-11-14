@@ -185,6 +185,30 @@ export class GamesService {
     }
   }
 
+  async getAdvice(id: string, email: string) {
+    if (!isUUID(id))
+      throw new HttpException('Invalid UUID format', HttpStatus.BAD_REQUEST);
+
+    try {
+      const user = await this.usersService.findWithWhere({ email });
+      if (!user)
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+      let game = await this.gameRepo.findOneBy({ id });
+      if (!game)
+        throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
+      if (game.whitePlayerId !== user.id && game.blackPlayerId !== user.id)
+        throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
+
+      const move = await this.chessEngineService.getBestMove(game.fen);
+
+      return { move };
+    } catch (err) {
+      if (err instanceof HttpException) throw err;
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   async create(body: CreateGameDto) {
     try {
       if (!body.whitePlayerId && !body.blackPlayerId) {
