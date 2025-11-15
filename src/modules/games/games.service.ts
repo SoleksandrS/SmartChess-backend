@@ -22,7 +22,6 @@ import { SocketService } from '../socket/socket.service';
 import { EPageGamesStatus, GetMyGamesDto } from './dto/get-my-games.dto';
 import { CreateGameDto } from './dto/create-game.dto';
 import { TGameCheckAITurn } from './games.types';
-import { GoogleGenaiService } from 'src/shared/google-genai/google-genai.service';
 
 @Injectable()
 export class GamesService {
@@ -38,8 +37,6 @@ export class GamesService {
     private chessEngineService: ChessEngineService,
     @Inject(UsersService)
     private usersService: UsersService,
-    @Inject(GoogleGenaiService)
-    private googleGenaiService: GoogleGenaiService,
     @Inject(forwardRef(() => SocketService))
     private socketService: SocketService,
   ) {}
@@ -203,24 +200,9 @@ export class GamesService {
       if (game.whitePlayerId !== user.id && game.blackPlayerId !== user.id)
         throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
 
-      const move = await this.chessEngineService.getBestMove(game.fen);
+      const result = await this.chessEngineService.getAdvice(game.fen);
 
-      const contents = `
-        You are an AI chess assistant. Analyze the given chess position and the selected move.
-
-        Position (FEN): ${game.fen}
-        Move: ${move}
-
-        Task:
-        - Explain in 1–2 concise sentences why this move is strategically or tactically useful.
-        - The explanation must start **exactly** with: "This move ...".
-        - Do NOT mention that you are an AI model.
-        - Focus only on chess reasoning (e.g., improving activity, creating threats, defending, gaining tempo, etc.).
-
-        Return only the explanation sentence(s).`;
-      const reason = await this.googleGenaiService.sendRequest(contents);
-
-      return { move, reason };
+      return result;
     } catch (err) {
       if (err instanceof HttpException) throw err;
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);

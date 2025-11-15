@@ -10,14 +10,12 @@ import { GameAIMoveQueue } from 'src/queues/game-ai-move.queue';
 import { ChessEngineModule } from 'src/shared/chess-engine/chess-engine.module';
 import { UsersModule } from '../users/users.module';
 import { SocketModule } from '../socket/socket.module';
-import { GoogleGenaiModule } from 'src/shared/google-genai/google-genai.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Game, GameMove]),
     BullModule.registerQueue({ name: EQueue.GAME_AI_MOVE }),
     ChessEngineModule,
-    GoogleGenaiModule,
     UsersModule,
     forwardRef(() => SocketModule),
   ],
