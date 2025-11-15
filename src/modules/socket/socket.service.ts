@@ -7,7 +7,7 @@ import { GameRoom } from './classes/GameRoom';
 @Injectable()
 export class SocketService {
   private static connectedClients: Map<number, Socket[]> = new Map();
-  private static rooms: Map<string, GameRoom> = new Map();
+  private static gameRooms: Map<string, GameRoom> = new Map();
   private static idsList: Map<string, number> = new Map();
 
   constructor(
@@ -33,7 +33,7 @@ export class SocketService {
 
     socket.on(ESocketEvent.DISCONNECT, () => {
       this.removeSocketFromList(id, socket);
-      this.removeFromRooms(socket);
+      this.removeFromGameRooms(socket);
     });
 
     socket.emit(ESocketEvent.MAIN_CONNECT, true);
@@ -48,30 +48,30 @@ export class SocketService {
     const userId = SocketService.idsList.get(socket.id);
     if (!userId) return;
 
-    let room = SocketService.rooms.get(gameId);
+    let gameRoom = SocketService.gameRooms.get(gameId);
 
-    if (!room) {
+    if (!gameRoom) {
       const game = await this.gamesService.findOneSimple(gameId);
-      room = new GameRoom(game);
-      SocketService.rooms.set(gameId, room);
+      gameRoom = new GameRoom(game);
+      SocketService.gameRooms.set(gameId, gameRoom);
     }
 
-    room.addPlayer(userId, socket);
+    gameRoom.addPlayer(userId, socket);
   }
 
   sendGameUpdate<T>(gameId: string, data: T) {
     try {
-      const room = SocketService.rooms.get(gameId);
-      if (room) room.broadcast(ESocketEvent.UPDATE_GAME, data);
+      const gameRoom = SocketService.gameRooms.get(gameId);
+      if (gameRoom) gameRoom.broadcast(ESocketEvent.UPDATE_GAME, data);
     } catch (error) {
       console.error('[Socket Service] sendGameUpdate', error);
     }
   }
 
-  private removeFromRooms(socket: Socket) {
-    for (const [id, room] of SocketService.rooms.entries()) {
-      room.removePlayer(socket);
-      if (room.isEmpty) SocketService.rooms.delete(id);
+  private removeFromGameRooms(socket: Socket) {
+    for (const [id, gameRoom] of SocketService.gameRooms.entries()) {
+      gameRoom.removePlayer(socket);
+      if (gameRoom.isEmpty) SocketService.gameRooms.delete(id);
     }
   }
 }
