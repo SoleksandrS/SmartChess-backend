@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  OnModuleInit,
 } from '@nestjs/common';
 import { isUUID } from 'class-validator';
 import { DataSource, Repository } from 'typeorm';
@@ -11,7 +12,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import * as _ from 'lodash';
-import { constants } from 'src/config';
+import { GoogleGenAI } from '@google/genai';
+import { constants, envs } from 'src/config';
 import { EQueue } from 'src/core/enums';
 import { EChessResult, EChessSide } from 'src/types/chess.types';
 import { Game } from './entities/game.entity';
@@ -24,7 +26,9 @@ import { CreateGameDto } from './dto/create-game.dto';
 import { TGameCheckAITurn } from './games.types';
 
 @Injectable()
-export class GamesService {
+export class GamesService implements OnModuleInit {
+  private ai: GoogleGenAI;
+
   constructor(
     private dataSource: DataSource,
     @InjectRepository(Game)
@@ -40,6 +44,10 @@ export class GamesService {
     @Inject(forwardRef(() => SocketService))
     private socketService: SocketService,
   ) {}
+
+  onModuleInit() {
+    this.ai = new GoogleGenAI({ apiKey: envs.genai.apiKey });
+  }
 
   private getInitBody<T>(body: T) {
     return { ...body, fen: constants.chess.initFen };
@@ -202,7 +210,13 @@ export class GamesService {
 
       const move = await this.chessEngineService.getBestMove(game.fen);
 
-      return { move };
+      const contents = `Game Chess\nCurrent fen (position): "${game.fen}"\nSelected move: "${move}"\nExplain why this move is useful. You need to give answer in 1-2 sentences. Answer must start with "This move ..."`;
+      const response = await this.ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents,
+      });
+
+      return { move, reason: response.text };
     } catch (err) {
       if (err instanceof HttpException) throw err;
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -16,4 +16,7 @@ export const envs = {
     host: process.env.REDIS_HOST || 'redis',
     port: parseInt(process.env.REDIS_PORT, 10) || 6379,
   },
+  genai: {
+    apiKey: process.env.GOOGLE_GENAI_API_KEY || 'api-key',
+  },
 };
