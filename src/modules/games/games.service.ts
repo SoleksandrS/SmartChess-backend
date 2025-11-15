@@ -210,7 +210,19 @@ export class GamesService implements OnModuleInit {
 
       const move = await this.chessEngineService.getBestMove(game.fen);
 
-      const contents = `Game Chess\nCurrent fen (position): "${game.fen}"\nSelected move: "${move}"\nExplain why this move is useful. You need to give answer in 1-2 sentences. Answer must start with "This move ..."`;
+      const contents = `
+        You are an AI chess assistant. Analyze the given chess position and the selected move.
+
+        Position (FEN): ${game.fen}
+        Move: ${move}
+
+        Task:
+        - Explain in 1–2 concise sentences why this move is strategically or tactically useful.
+        - The explanation must start **exactly** with: "This move ...".
+        - Do NOT mention that you are an AI model.
+        - Focus only on chess reasoning (e.g., improving activity, creating threats, defending, gaining tempo, etc.).
+
+        Return only the explanation sentence(s).`;
       const response = await this.ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents,
