@@ -10,6 +10,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { IRequest } from 'src/core/interfaces';
@@ -33,6 +34,7 @@ export class GamesController {
     return this.service.findOne(id, req.user.email);
   }
 
+  @Throttle({ default: { limit: 1, ttl: 10000 } })
   @Get(':id/advice')
   getAdvice(@Req() req: IRequest, @Param('id') id: string) {
     return this.service.getAdvice(id, req.user.email);

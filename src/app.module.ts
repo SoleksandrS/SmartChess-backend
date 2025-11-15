@@ -1,7 +1,9 @@
 import 'dotenv/config';
+import { APP_GUARD } from '@nestjs/core';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { envs } from './config';
 import { SocketModule } from './modules/socket/socket.module';
 import { HeartbeatModule } from './modules/heartbeat/heartbeat.module';
@@ -27,11 +29,13 @@ import { GamesModule } from './modules/games/games.module';
         removeOnFail: true,
       },
     }),
+    ThrottlerModule.forRoot({ throttlers: [{ ttl: 60000, limit: 100 }] }),
     SocketModule,
     HeartbeatModule,
     AuthModule,
     UsersModule,
     GamesModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}
