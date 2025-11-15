@@ -36,6 +36,7 @@ export class ChessEngineService {
 
   async getAdvice(fen: string) {
     const move = await this.getBestMove(fen);
+    if (!move) throw new Error('Something went wrong while compute best move');
 
     const prompt = `
       You are an AI chess assistant. Analyze the given chess position and the selected move.
