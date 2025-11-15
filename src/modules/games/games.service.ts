@@ -4,7 +4,6 @@ import {
   HttpStatus,
   Inject,
   Injectable,
-  OnModuleInit,
 } from '@nestjs/common';
 import { isUUID } from 'class-validator';
 import { DataSource, Repository } from 'typeorm';
@@ -12,8 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import * as _ from 'lodash';
-import { GoogleGenAI } from '@google/genai';
-import { constants, envs } from 'src/config';
+import { constants } from 'src/config';
 import { EQueue } from 'src/core/enums';
 import { EChessResult, EChessSide } from 'src/types/chess.types';
 import { Game } from './entities/game.entity';
@@ -24,11 +22,10 @@ import { SocketService } from '../socket/socket.service';
 import { EPageGamesStatus, GetMyGamesDto } from './dto/get-my-games.dto';
 import { CreateGameDto } from './dto/create-game.dto';
 import { TGameCheckAITurn } from './games.types';
+import { GoogleGenaiService } from 'src/shared/google-genai/google-genai.service';
 
 @Injectable()
-export class GamesService implements OnModuleInit {
-  private ai: GoogleGenAI;
-
+export class GamesService {
   constructor(
     private dataSource: DataSource,
     @InjectRepository(Game)
@@ -41,13 +38,11 @@ export class GamesService implements OnModuleInit {
     private chessEngineService: ChessEngineService,
     @Inject(UsersService)
     private usersService: UsersService,
+    @Inject(GoogleGenaiService)
+    private googleGenaiService: GoogleGenaiService,
     @Inject(forwardRef(() => SocketService))
     private socketService: SocketService,
   ) {}
-
-  onModuleInit() {
-    this.ai = new GoogleGenAI({ apiKey: envs.genai.apiKey });
-  }
 
   private getInitBody<T>(body: T) {
     return { ...body, fen: constants.chess.initFen };
@@ -223,12 +218,9 @@ export class GamesService implements OnModuleInit {
         - Focus only on chess reasoning (e.g., improving activity, creating threats, defending, gaining tempo, etc.).
 
         Return only the explanation sentence(s).`;
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents,
-      });
+      const reason = await this.googleGenaiService.sendRequest(contents);
 
-      return { move, reason: response.text };
+      return { move, reason };
     } catch (err) {
       if (err instanceof HttpException) throw err;
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
