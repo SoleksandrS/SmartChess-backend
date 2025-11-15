@@ -9,6 +9,7 @@ export class SocketService {
   private static connectedClients: Map<number, Socket[]> = new Map();
   private static gameRooms: Map<string, GameRoom> = new Map();
   private static idsList: Map<string, number> = new Map();
+  private static matchmakingQueue: Map<number, string> = new Map();
 
   constructor(
     @Inject(forwardRef(() => GamesService))
@@ -73,5 +74,13 @@ export class SocketService {
       gameRoom.removePlayer(socket);
       if (gameRoom.isEmpty) SocketService.gameRooms.delete(id);
     }
+  }
+
+  matchmakingJoin(id: number, socket: Socket) {
+    SocketService.matchmakingQueue.set(id, socket.id);
+  }
+
+  matchmakingLeave(id: number) {
+    SocketService.matchmakingQueue.delete(id);
   }
 }
