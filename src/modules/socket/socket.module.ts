@@ -13,6 +13,6 @@ import { GamesModule } from '../games/games.module';
     GameSocketService,
     MMSocketService,
   ],
-  exports: [GameSocketService],
+  exports: [GameSocketService, MMSocketService],
 })
 export class SocketModule {}
