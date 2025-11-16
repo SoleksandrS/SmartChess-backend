@@ -7,7 +7,7 @@ import { shufflePair } from 'src/utils/shufflePair';
 
 @Injectable()
 export class MMSocketService {
-  private static queue: Map<number, string> = new Map();
+  private static queue: Map<number, Socket> = new Map();
 
   constructor(
     @Inject(forwardRef(() => GamesService))
@@ -18,37 +18,29 @@ export class MMSocketService {
     const userId = MainSocketService.getIdsList(socket.id);
     if (!userId) return;
 
-    const socketId = MMSocketService.queue.get(userId);
-    if (socketId !== socket.id) {
-      const storedSocket = MainSocketService.getConnected(userId).find(
-        ({ id }) => id === socketId,
-      );
-      storedSocket?.emit(ESocketEvent.MATCHMAKING_LEAVE);
+    const storedSocket = MMSocketService.queue.get(userId);
+    if (storedSocket && storedSocket.id !== socket.id) {
+      storedSocket.emit(ESocketEvent.MATCHMAKING_LEAVE);
     }
 
-    MMSocketService.queue.set(userId, socket.id);
+    MMSocketService.queue.set(userId, socket);
 
-    if (MMSocketService.queue.size >= 2) {
-      const [p1, p2] = MMSocketService.queue.entries();
-      const players = shufflePair([p1[0], p2[0]]);
-      const game = await this.gamesService.create({
-        whitePlayerId: players[0],
-        blackPlayerId: players[1],
-      });
+    if (MMSocketService.queue.size < 2) return;
 
-      const socketP1 = MainSocketService.getConnected(p1[0]).find(
-        ({ id }) => id === p1[1],
-      );
-      const socketP2 = MainSocketService.getConnected(p2[0]).find(
-        ({ id }) => id === p2[1],
-      );
+    const [[idP1, socketP1], [idP2, socketP2]] =
+      MMSocketService.queue.entries();
 
-      socketP1?.emit(ESocketEvent.MATCHMAKING_DONE, { gameId: game.id });
-      socketP2?.emit(ESocketEvent.MATCHMAKING_DONE, { gameId: game.id });
+    const players = shufflePair([idP1, idP2]);
+    const game = await this.gamesService.create({
+      whitePlayerId: players[0],
+      blackPlayerId: players[1],
+    });
 
-      MMSocketService.queue.delete(p1[0]);
-      MMSocketService.queue.delete(p2[0]);
-    }
+    socketP1.emit(ESocketEvent.MATCHMAKING_DONE, { gameId: game.id });
+    socketP2.emit(ESocketEvent.MATCHMAKING_DONE, { gameId: game.id });
+
+    MMSocketService.queue.delete(idP1);
+    MMSocketService.queue.delete(idP2);
   }
 
   leave(socket: Socket) {
@@ -62,10 +54,9 @@ export class MMSocketService {
     const userId = MainSocketService.getIdsList(socket.id);
     if (!userId) return;
 
-    const socketId = MMSocketService.queue.get(userId);
-    if (!socketId) return;
+    const storedSocket = MMSocketService.queue.get(userId);
+    if (!storedSocket) return;
 
-    if (socketId === socket.id) MMSocketService.queue.delete(userId);
-    console.log('EXAEXA - queue', MMSocketService.queue);
+    if (storedSocket.id === socket.id) MMSocketService.queue.delete(userId);
   }
 }
