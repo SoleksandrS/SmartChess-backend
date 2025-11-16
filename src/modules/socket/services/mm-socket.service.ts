@@ -18,6 +18,14 @@ export class MMSocketService {
     const userId = MainSocketService.getIdsList(socket.id);
     if (!userId) return;
 
+    const socketId = MMSocketService.queue.get(userId);
+    if (socketId !== socket.id) {
+      const storedSocket = MainSocketService.getConnected(userId).find(
+        ({ id }) => id === socketId,
+      );
+      storedSocket?.emit(ESocketEvent.MATCHMAKING_LEAVE);
+    }
+
     MMSocketService.queue.set(userId, socket.id);
 
     if (MMSocketService.queue.size >= 2) {
@@ -58,5 +66,6 @@ export class MMSocketService {
     if (!socketId) return;
 
     if (socketId === socket.id) MMSocketService.queue.delete(userId);
+    console.log('EXAEXA - queue', MMSocketService.queue);
   }
 }
