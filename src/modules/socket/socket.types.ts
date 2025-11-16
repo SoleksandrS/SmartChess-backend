@@ -10,12 +10,7 @@ export enum ESocketEvent {
   MATCHMAKING_DONE = 'matchmaking:done',
 }
 
-export interface IPlayerData {
-  id: number;
-  socket: Socket;
-}
-
 export interface IPairPlayers {
-  p1: IPlayerData;
-  p2: IPlayerData;
+  p1: number;
+  p2: number;
 }
