@@ -30,11 +30,14 @@ export class MMSocketService {
   }
 
   private findPair(entries: [number, Socket][]): IPairPlayers {
-    const idx1 = getRandomInRangeWithout(0, entries.length - 1, []);
-    const idx2 = getRandomInRangeWithout(0, entries.length - 1, [idx1]);
+    const idxs = [];
+    while (idxs.length < 2) {
+      idxs.push(getRandomInRangeWithout(0, entries.length - 1, idxs));
+    }
+    idxs.sort((a, b) => b - a);
 
-    const [[idP1, socketP1]] = entries.splice(idx1, 1);
-    const [[idP2, socketP2]] = entries.splice(idx2, 1);
+    const [[idP1, socketP1]] = entries.splice(idxs[0], 1);
+    const [[idP2, socketP2]] = entries.splice(idxs[1], 1);
 
     const p1 = { id: idP1, socket: socketP1 };
     const p2 = { id: idP2, socket: socketP2 };
