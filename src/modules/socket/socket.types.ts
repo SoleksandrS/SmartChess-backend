@@ -5,4 +5,5 @@ export enum ESocketEvent {
   UPDATE_GAME = 'update-game',
   JOIN_TO_MATCHMAKING = 'join-to-matchmaking',
   LEAVE_FROM_MATCHMAKING = 'leave-from-matchmaking',
+  DONE_MATCHMAKING = 'done-matchmaking',
 }

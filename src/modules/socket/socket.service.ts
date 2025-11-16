@@ -76,8 +76,29 @@ export class SocketService {
     }
   }
 
-  matchmakingJoin(id: number, socket: Socket) {
+  async matchmakingJoin(id: number, socket: Socket) {
     SocketService.matchmakingQueue.set(id, socket.id);
+
+    if (SocketService.matchmakingQueue.size >= 2) {
+      const [p1, p2] = SocketService.matchmakingQueue.entries();
+      const game = await this.gamesService.create({
+        whitePlayerId: p1[0],
+        blackPlayerId: p2[0],
+      });
+
+      const socketP1 = (SocketService.connectedClients.get(p1[0]) || []).find(
+        ({ id }) => id === p1[1],
+      );
+      const socketP2 = (SocketService.connectedClients.get(p2[0]) || []).find(
+        ({ id }) => id === p2[1],
+      );
+
+      socketP1?.emit(ESocketEvent.DONE_MATCHMAKING, { gameId: game.id });
+      socketP2?.emit(ESocketEvent.DONE_MATCHMAKING, { gameId: game.id });
+
+      SocketService.matchmakingQueue.delete(p1[0]);
+      SocketService.matchmakingQueue.delete(p2[0]);
+    }
   }
 
   matchmakingLeave(id: number) {
