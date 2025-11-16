@@ -4,7 +4,9 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { envs } from './config';
+import { CronJobsModule } from './modules/cron-jobs/cron-jobs.module';
 import { SocketModule } from './modules/socket/socket.module';
 import { HeartbeatModule } from './modules/heartbeat/heartbeat.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -30,6 +32,8 @@ import { GamesModule } from './modules/games/games.module';
       },
     }),
     ThrottlerModule.forRoot({ throttlers: [{ ttl: 60000, limit: 100 }] }),
+    ScheduleModule.forRoot(),
+    CronJobsModule,
     SocketModule,
     HeartbeatModule,
     AuthModule,
