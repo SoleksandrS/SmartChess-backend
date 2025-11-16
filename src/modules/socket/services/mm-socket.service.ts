@@ -4,6 +4,7 @@ import { MainSocketService } from './main-socket.service';
 import { ESocketEvent, IPairPlayers } from '../socket.types';
 import { GamesService } from '../../games/games.service';
 import { shufflePair } from 'src/utils/shufflePair';
+import { getRandomInRangeWithout } from 'src/utils/getRandom';
 
 @Injectable()
 export class MMSocketService {
@@ -28,7 +29,32 @@ export class MMSocketService {
     MMSocketService.queue.delete(p2.id);
   }
 
-  async join(socket: Socket) {
+  private findPair(entries: [number, Socket][]): IPairPlayers {
+    const idx1 = getRandomInRangeWithout(0, entries.length - 1, []);
+    const idx2 = getRandomInRangeWithout(0, entries.length - 1, [idx1]);
+
+    const [[idP1, socketP1]] = entries.splice(idx1, 1);
+    const [[idP2, socketP2]] = entries.splice(idx2, 1);
+
+    const p1 = { id: idP1, socket: socketP1 };
+    const p2 = { id: idP2, socket: socketP2 };
+    return { p1, p2 };
+  }
+
+  async execute() {
+    const pairs = Math.floor(MMSocketService.queue.size / 2);
+    if (pairs === 0) return;
+
+    const entries = Array.from(MMSocketService.queue.entries());
+    entries.length = pairs * 2;
+
+    while (entries.length) {
+      const pair = this.findPair(entries);
+      await this.createGame(pair);
+    }
+  }
+
+  join(socket: Socket) {
     const userId = MainSocketService.getIdsList(socket.id);
     if (!userId) return;
 
@@ -38,15 +64,6 @@ export class MMSocketService {
     }
 
     MMSocketService.queue.set(userId, socket);
-
-    if (MMSocketService.queue.size < 2) return;
-
-    const [[idP1, socketP1], [idP2, socketP2]] =
-      MMSocketService.queue.entries();
-
-    const p1 = { id: idP1, socket: socketP1 };
-    const p2 = { id: idP2, socket: socketP2 };
-    await this.createGame({ p1, p2 });
   }
 
   leave(socket: Socket) {
