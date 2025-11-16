@@ -18,7 +18,7 @@ import { Game } from './entities/game.entity';
 import { GameMove } from './entities/game-move.entity';
 import { ChessEngineService } from 'src/shared/chess-engine/chess-engine.service';
 import { UsersService } from '../users/users.service';
-import { SocketService } from '../socket/socket.service';
+import { GameSocketService } from '../socket/services/game-socket.service';
 import { EPageGamesStatus, GetMyGamesDto } from './dto/get-my-games.dto';
 import { CreateGameDto } from './dto/create-game.dto';
 import { TGameCheckAITurn } from './games.types';
@@ -37,8 +37,8 @@ export class GamesService {
     private chessEngineService: ChessEngineService,
     @Inject(UsersService)
     private usersService: UsersService,
-    @Inject(forwardRef(() => SocketService))
-    private socketService: SocketService,
+    @Inject(forwardRef(() => GameSocketService))
+    private gameSocketService: GameSocketService,
   ) {}
 
   private getInitBody<T>(body: T) {
@@ -301,7 +301,7 @@ export class GamesService {
         values: { fen, moveNumber, turn, result },
         move: _.pick(entity, ['number', 'side', 'move', 'fenAfter']),
       };
-      this.socketService.sendGameUpdate(game.id, body);
+      this.gameSocketService.update(game.id, body);
 
       return body;
     } catch (err) {

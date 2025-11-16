@@ -1,11 +1,18 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { SocketGateway } from './socket.gateway';
-import { SocketService } from './socket.service';
+import { MainSocketService } from './services/main-socket.service';
+import { GameSocketService } from './services/game-socket.service';
+import { MMSocketService } from './services/mm-socket.service';
 import { GamesModule } from '../games/games.module';
 
 @Module({
   imports: [forwardRef(() => GamesModule)],
-  providers: [SocketGateway, SocketService],
-  exports: [SocketService],
+  providers: [
+    SocketGateway,
+    MainSocketService,
+    GameSocketService,
+    MMSocketService,
+  ],
+  exports: [GameSocketService],
 })
 export class SocketModule {}
