@@ -33,15 +33,12 @@ export class SocketGateway {
   }
 
   @SubscribeMessage(ESocketEvent.JOIN_TO_MATCHMAKING)
-  handleMatchmakingJoin(
-    @MessageBody() body: { id: number },
-    @ConnectedSocket() client: Socket,
-  ) {
-    this.socketService.matchmakingJoin(body.id, client);
+  handleMatchmakingJoin(@ConnectedSocket() client: Socket) {
+    this.socketService.matchmakingJoin(client);
   }
 
   @SubscribeMessage(ESocketEvent.LEAVE_FROM_MATCHMAKING)
-  handleMatchmakingLeave(@MessageBody() body: { id: number }) {
-    this.socketService.matchmakingLeave(body.id);
+  handleMatchmakingLeave(@ConnectedSocket() client: Socket) {
+    this.socketService.matchmakingLeave(client);
   }
 }

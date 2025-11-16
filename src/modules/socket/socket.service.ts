@@ -77,8 +77,11 @@ export class SocketService {
     }
   }
 
-  async matchmakingJoin(id: number, socket: Socket) {
-    SocketService.matchmakingQueue.set(id, socket.id);
+  async matchmakingJoin(socket: Socket) {
+    const userId = SocketService.idsList.get(socket.id);
+    if (!userId) return;
+
+    SocketService.matchmakingQueue.set(userId, socket.id);
 
     if (SocketService.matchmakingQueue.size >= 2) {
       const [p1, p2] = SocketService.matchmakingQueue.entries();
@@ -103,7 +106,10 @@ export class SocketService {
     }
   }
 
-  matchmakingLeave(id: number) {
-    SocketService.matchmakingQueue.delete(id);
+  matchmakingLeave(socket: Socket) {
+    const userId = SocketService.idsList.get(socket.id);
+    if (!userId) return;
+
+    SocketService.matchmakingQueue.delete(userId);
   }
 }
