@@ -1,12 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+import { MMSocketService } from '../socket/services/mm-socket.service';
 
 @Injectable()
 export class CronJobsService {
-  constructor() {}
+  constructor(
+    @Inject(MMSocketService)
+    private readonly mmSocketService: MMSocketService,
+  ) {}
 
   @Cron('*/10 * * * * *')
-  cronJob1() {
-    console.log('[Cron Job #1]');
+  async cronMatchmaking() {
+    await this.mmSocketService.execute();
   }
 }
