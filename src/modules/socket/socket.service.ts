@@ -3,6 +3,7 @@ import { Socket } from 'socket.io';
 import { ESocketEvent } from './socket.types';
 import { GamesService } from '../games/games.service';
 import { GameRoom } from './classes/GameRoom';
+import { shufflePair } from 'src/utils/shufflePair';
 
 @Injectable()
 export class SocketService {
@@ -81,9 +82,10 @@ export class SocketService {
 
     if (SocketService.matchmakingQueue.size >= 2) {
       const [p1, p2] = SocketService.matchmakingQueue.entries();
+      const players = shufflePair([p1[0], p2[0]]);
       const game = await this.gamesService.create({
-        whitePlayerId: p1[0],
-        blackPlayerId: p2[0],
+        whitePlayerId: players[0],
+        blackPlayerId: players[1],
       });
 
       const socketP1 = (SocketService.connectedClients.get(p1[0]) || []).find(
