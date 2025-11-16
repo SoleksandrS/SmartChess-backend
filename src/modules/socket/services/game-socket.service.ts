@@ -34,7 +34,7 @@ export class GameSocketService {
       const gameRoom = GameSocketService.rooms.get(gameId);
       if (!gameRoom) return;
 
-      gameRoom.broadcast(ESocketEvent.UPDATE_GAME, data);
+      gameRoom.broadcast(ESocketEvent.GAME_UPDATE, data);
     } catch (error) {
       console.error('[Socket Service] sendGameUpdate', error);
     }

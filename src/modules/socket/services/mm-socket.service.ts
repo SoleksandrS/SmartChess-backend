@@ -35,8 +35,8 @@ export class MMSocketService {
         ({ id }) => id === p2[1],
       );
 
-      socketP1?.emit(ESocketEvent.DONE_MATCHMAKING, { gameId: game.id });
-      socketP2?.emit(ESocketEvent.DONE_MATCHMAKING, { gameId: game.id });
+      socketP1?.emit(ESocketEvent.MATCHMAKING_DONE, { gameId: game.id });
+      socketP2?.emit(ESocketEvent.MATCHMAKING_DONE, { gameId: game.id });
 
       MMSocketService.queue.delete(p1[0]);
       MMSocketService.queue.delete(p2[0]);

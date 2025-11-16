@@ -34,7 +34,7 @@ export class SocketGateway {
     this.mainService.handleConnection(body.id, client);
   }
 
-  @SubscribeMessage(ESocketEvent.JOIN_TO_GAME)
+  @SubscribeMessage(ESocketEvent.GAME_JOIN)
   handleJoin(
     @MessageBody() body: { gameId: string },
     @ConnectedSocket() client: Socket,
@@ -42,12 +42,12 @@ export class SocketGateway {
     this.gameService.join(body.gameId, client);
   }
 
-  @SubscribeMessage(ESocketEvent.JOIN_TO_MATCHMAKING)
+  @SubscribeMessage(ESocketEvent.MATCHMAKING_JOIN)
   handleMatchmakingJoin(@ConnectedSocket() client: Socket) {
     this.mmService.join(client);
   }
 
-  @SubscribeMessage(ESocketEvent.LEAVE_FROM_MATCHMAKING)
+  @SubscribeMessage(ESocketEvent.MATCHMAKING_LEAVE)
   handleMatchmakingLeave(@ConnectedSocket() client: Socket) {
     this.mmService.leave(client);
   }
