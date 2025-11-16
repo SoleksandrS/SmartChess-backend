@@ -34,8 +34,9 @@ export class SocketService {
     this.addSocketToList(id, socket);
 
     socket.on(ESocketEvent.DISCONNECT, () => {
-      this.removeSocketFromList(id, socket);
       this.removeFromGameRooms(socket);
+      this.removeFromMatchmaking(socket);
+      this.removeSocketFromList(id, socket);
     });
 
     socket.emit(ESocketEvent.MAIN_CONNECT, true);
@@ -111,5 +112,15 @@ export class SocketService {
     if (!userId) return;
 
     SocketService.matchmakingQueue.delete(userId);
+  }
+
+  removeFromMatchmaking(socket: Socket) {
+    const userId = SocketService.idsList.get(socket.id);
+    if (!userId) return;
+
+    const socketId = SocketService.matchmakingQueue.get(userId);
+    if (!socketId) return;
+
+    if (socketId === socket.id) SocketService.matchmakingQueue.delete(userId);
   }
 }
