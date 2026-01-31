@@ -70,14 +70,15 @@ export class ChessEngineService {
       ${moves}
 
       Task:
-      - Analyze the game **only from the perspective of the given side**.
-      - Identify and clearly describe:
-        - The strongest skills demonstrated (e.g. opening understanding, tactics, positional play, defense, endgame technique).
-        - The weakest skills or recurring problems (e.g. slow development, missed tactics, poor king safety, inaccurate plans).
-      - Base the analysis strictly on the moves played.
+      - Analyze the game **from the perspective of the given side**, using **second-person language**.
+      - Refer to the analyzed player as **"you"** and the other player as **"your opponent"**.
+      - Clearly describe:
+        - Your strongest demonstrated skills (e.g. opening understanding, tactical awareness, positional play, endgame technique).
+        - Your weakest areas or recurring mistakes, supported by examples from the game.
+      - Base all conclusions strictly on the moves played.
       - Do NOT restate the move list.
+      - Do NOT mention colors (White/Black) in the analysis.
       - Do NOT mention that you are an AI model.
-      - Do NOT switch perspective to the opponent except when necessary to explain a mistake or threat.
 
       Conclusion:
       - End the analysis with **one short sentence** giving practical advice on how the given side can improve their game.
@@ -86,7 +87,7 @@ export class ChessEngineService {
       - 1 short paragraph for strengths
       - 1 short paragraph for weaknesses
       - 1 final advice sentence
-      - Clear, instructional chess language only
+      - Instructional, personal, and constructive tone
       - No emojis, no bullet points
 
       Return only the analysis text.`;
