@@ -32,8 +32,8 @@ export class GamesService {
     private gameRepo: Repository<Game>,
     @InjectRepository(GameMove)
     private moveRepo: Repository<GameMove>,
-    @InjectQueue(EQueue.GAME_AI_MOVE)
-    private readonly gameAOMoveQueue: Queue,
+    @InjectQueue(EQueue.GAME)
+    private readonly gameQueue: Queue,
     @Inject(ChessEngineService)
     private chessEngineService: ChessEngineService,
     @Inject(GameAnalysisService)
@@ -249,7 +249,7 @@ export class GamesService {
 
       const isAIMove = this.checkIsAITurn(game);
       if (isAIMove && !game.result) {
-        this.gameAOMoveQueue.add('make-move', { gameId: game.id });
+        this.gameQueue.add('make-move', { gameId: game.id });
       }
 
       return true;
