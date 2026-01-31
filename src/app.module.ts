@@ -12,6 +12,7 @@ import { HeartbeatModule } from './modules/heartbeat/heartbeat.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { GamesModule } from './modules/games/games.module';
+import { GameAnalysisModule } from './modules/game-analysis/game-analysis.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { GamesModule } from './modules/games/games.module';
     AuthModule,
     UsersModule,
     GamesModule,
+    GameAnalysisModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

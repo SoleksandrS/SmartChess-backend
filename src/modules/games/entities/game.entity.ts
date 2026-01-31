@@ -12,6 +12,7 @@ import {
 import { EChessResult, EChessSide } from 'src/types/chess.types';
 import { User } from 'src/modules/users/entities/user.entity';
 import { GameMove } from './game-move.entity';
+import { GameAnalysis } from 'src/modules/game-analysis/entities/game-analysis.entity';
 
 @Entity('games')
 export class Game {
@@ -53,4 +54,7 @@ export class Game {
 
   @OneToMany(() => GameMove, (entity) => entity.game)
   moves: GameMove[];
+
+  @OneToMany(() => GameAnalysis, (entity) => entity.game)
+  analysis: GameAnalysis[];
 }
