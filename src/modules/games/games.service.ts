@@ -13,11 +13,11 @@ import { Queue } from 'bull';
 import * as _ from 'lodash';
 import { constants } from 'src/config';
 import { EQueue } from 'src/core/enums';
+import { queueCommands } from 'src/core/queues.config';
 import { EChessResult, EChessSide } from 'src/types/chess.types';
 import { Game } from './entities/game.entity';
 import { GameMove } from './entities/game-move.entity';
 import { ChessEngineService } from 'src/shared/chess-engine/chess-engine.service';
-import { GameAnalysisService } from '../game-analysis/game-analysis.service';
 import { UsersService } from '../users/users.service';
 import { GameSocketService } from '../socket/services/game-socket.service';
 import { EPageGamesStatus, GetMyGamesDto } from './dto/get-my-games.dto';
@@ -32,12 +32,10 @@ export class GamesService {
     private gameRepo: Repository<Game>,
     @InjectRepository(GameMove)
     private moveRepo: Repository<GameMove>,
-    @InjectQueue(EQueue.GAME_AI_MOVE)
-    private readonly gameAOMoveQueue: Queue,
+    @InjectQueue(EQueue.GAME)
+    private readonly gameQueue: Queue,
     @Inject(ChessEngineService)
     private chessEngineService: ChessEngineService,
-    @Inject(GameAnalysisService)
-    private gameAnalysisService: GameAnalysisService,
     @Inject(UsersService)
     private usersService: UsersService,
     @Inject(forwardRef(() => GameSocketService))
@@ -67,6 +65,17 @@ export class GamesService {
     if (!player)
       throw new HttpException('Player not found', HttpStatus.NOT_FOUND);
     return player;
+  }
+
+  async getGameForAnalyzing(id: string) {
+    return this.gameRepo
+      .createQueryBuilder('game')
+      .leftJoin('game.moves', 'move')
+      .addSelect(['move.number', 'move.side', 'move.move'])
+      .where('game.id = :id', { id })
+      .addOrderBy('move.number', 'ASC')
+      .addOrderBy('move.side', 'DESC')
+      .getOne();
   }
 
   async findMy(query: GetMyGamesDto, email: string) {
@@ -249,7 +258,9 @@ export class GamesService {
 
       const isAIMove = this.checkIsAITurn(game);
       if (isAIMove && !game.result) {
-        this.gameAOMoveQueue.add('make-move', { gameId: game.id });
+        this.gameQueue.add(queueCommands[EQueue.GAME].makeAIMove, {
+          gameId: game.id,
+        });
       }
 
       return true;
@@ -301,13 +312,9 @@ export class GamesService {
       await qr.commitTransaction();
 
       if (result) {
-        try {
-          const moves = await this.moveRepo.findBy({ gameId: game.id });
-          await this.gameAnalysisService.analyzeGame({ ...game, moves });
-        } catch (err) {
-          const msg = `Something went wrong while analyzing game "${game.id}"`;
-          console.error(`[Game Service] ${msg}`, err);
-        }
+        this.gameQueue.add(queueCommands[EQueue.GAME].analyze, {
+          gameId: game.id,
+        });
       }
 
       const body = {

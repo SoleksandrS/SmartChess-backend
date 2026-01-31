@@ -3,5 +3,5 @@ export enum ERoles {
 }
 
 export enum EQueue {
-  GAME_AI_MOVE = 'game-ai-move',
+  GAME = 'game',
 }
