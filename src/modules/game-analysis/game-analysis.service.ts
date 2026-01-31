@@ -31,7 +31,7 @@ export class GameAnalysisService {
       if (!user)
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
-      const analysis = await this.analysisRepo
+      const entity = await this.analysisRepo
         .createQueryBuilder('analysis')
         .leftJoin('analysis.game', 'game')
         .where('game.id = :id', { id })
@@ -40,13 +40,13 @@ export class GameAnalysisService {
           { userId: user.id },
         )
         .getOne();
-      if (!analysis)
+      if (!entity?.analysis)
         throw new HttpException(
           'Game analysis not found',
           HttpStatus.NOT_FOUND,
         );
 
-      return analysis;
+      return entity.analysis;
     } catch (err) {
       if (err instanceof HttpException) throw err;
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
