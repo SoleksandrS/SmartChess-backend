@@ -17,6 +17,7 @@ import { EChessResult, EChessSide } from 'src/types/chess.types';
 import { Game } from './entities/game.entity';
 import { GameMove } from './entities/game-move.entity';
 import { ChessEngineService } from 'src/shared/chess-engine/chess-engine.service';
+import { GameAnalysisService } from '../game-analysis/game-analysis.service';
 import { UsersService } from '../users/users.service';
 import { GameSocketService } from '../socket/services/game-socket.service';
 import { EPageGamesStatus, GetMyGamesDto } from './dto/get-my-games.dto';
@@ -35,6 +36,8 @@ export class GamesService {
     private readonly gameAOMoveQueue: Queue,
     @Inject(ChessEngineService)
     private chessEngineService: ChessEngineService,
+    @Inject(GameAnalysisService)
+    private gameAnalysisService: GameAnalysisService,
     @Inject(UsersService)
     private usersService: UsersService,
     @Inject(forwardRef(() => GameSocketService))
@@ -296,6 +299,16 @@ export class GamesService {
       await qr.manager.save(entity);
 
       await qr.commitTransaction();
+
+      if (result) {
+        try {
+          const moves = await this.moveRepo.findBy({ gameId: game.id });
+          await this.gameAnalysisService.analyzeGame({ ...game, moves });
+        } catch (err) {
+          const msg = `Something went wrong while analyzing game "${game.id}"`;
+          console.error(`[Game Service] ${msg}`, err);
+        }
+      }
 
       const body = {
         values: { fen, moveNumber, turn, result },
