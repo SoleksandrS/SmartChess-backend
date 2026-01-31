@@ -7,29 +7,21 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { EChessSide } from 'src/types/chess.types';
-import { Game } from './game.entity';
+import { Game } from 'src/modules/games/entities/game.entity';
 
-export type TShortGameMove = Pick<GameMove, 'side' | 'number' | 'move'>;
-
-@Entity('game-moves')
-export class GameMove {
+@Entity('game-analysis')
+export class GameAnalysis {
   @ManyToOne(() => Game, (entity) => entity.id)
   @JoinColumn({ name: 'gameId' })
   game: Game;
   @PrimaryColumn({ type: 'uuid' })
   gameId: string;
 
-  @PrimaryColumn()
-  number: number;
-
   @PrimaryColumn({ type: 'enum', enum: EChessSide, nullable: false })
   side: EChessSide;
 
   @Column({ type: 'varchar', nullable: false })
-  move: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  fenAfter: string;
+  analysis: string;
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'now()' })
   createdAt: Date;

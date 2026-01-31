@@ -8,6 +8,7 @@ import { GamesService } from './games.service';
 import { GamesController } from './games.controller';
 import { GameAIMoveQueue } from 'src/queues/game-ai-move.queue';
 import { ChessEngineModule } from 'src/shared/chess-engine/chess-engine.module';
+import { GameAnalysisModule } from '../game-analysis/game-analysis.module';
 import { UsersModule } from '../users/users.module';
 import { SocketModule } from '../socket/socket.module';
 
@@ -16,6 +17,7 @@ import { SocketModule } from '../socket/socket.module';
     TypeOrmModule.forFeature([Game, GameMove]),
     BullModule.registerQueue({ name: EQueue.GAME_AI_MOVE }),
     ChessEngineModule,
+    GameAnalysisModule,
     UsersModule,
     forwardRef(() => SocketModule),
   ],
