@@ -9,6 +9,8 @@ import {
 import { EChessSide } from 'src/types/chess.types';
 import { Game } from './game.entity';
 
+export type TShortGameMove = Pick<GameMove, 'side' | 'number' | 'move'>;
+
 @Entity('game-moves')
 export class GameMove {
   @ManyToOne(() => Game, (entity) => entity.id)

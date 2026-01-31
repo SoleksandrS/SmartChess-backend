@@ -2,7 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Chess } from 'chess.js';
 import axios from 'axios';
 import { GoogleGenaiService } from '../google-genai/google-genai.service';
-import { EChessResult } from 'src/types/chess.types';
+import { EChessResult, EChessSide } from 'src/types/chess.types';
+import { TShortGameMove } from 'src/modules/games/entities/game-move.entity';
 import { regexBestMove, StockfishAnalysis } from './chess-engine.types';
 
 @Injectable()
@@ -54,5 +55,44 @@ export class ChessEngineService {
     const reason = await this.googleGenaiService.sendRequest(prompt);
 
     return { move, reason };
+  }
+
+  async getAnalysis(side: EChessSide, moves: TShortGameMove[]) {
+    const prompt = `
+      You are an AI chess assistant. Analyze the following chess game from the perspective of the given side.
+
+      Side to analyze: ${side}  // "w" - white or "b" - black
+
+      Moves:
+      Each move is represented as (side, moveNumber, move). Example: { side: 'w', number: 10, move: 'g1f3' }
+
+      Move list:
+      ${moves}
+
+      Task:
+      - Analyze the game **only from the perspective of the given side**.
+      - Identify and clearly describe:
+        - The strongest skills demonstrated (e.g. opening understanding, tactics, positional play, defense, endgame technique).
+        - The weakest skills or recurring problems (e.g. slow development, missed tactics, poor king safety, inaccurate plans).
+      - Base the analysis strictly on the moves played.
+      - Do NOT restate the move list.
+      - Do NOT mention that you are an AI model.
+      - Do NOT switch perspective to the opponent except when necessary to explain a mistake or threat.
+
+      Conclusion:
+      - End the analysis with **one short sentence** giving practical advice on how the given side can improve their game.
+
+      Style:
+      - 1 short paragraph for strengths
+      - 1 short paragraph for weaknesses
+      - 1 final advice sentence
+      - Clear, instructional chess language only
+      - No emojis, no bullet points
+
+      Return only the analysis text.`;
+
+    const analysis = await this.googleGenaiService.sendRequest(prompt);
+
+    return analysis;
   }
 }
