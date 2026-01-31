@@ -36,7 +36,7 @@ export class GameAnalysisService {
         .leftJoin('analysis.game', 'game')
         .where('game.id = :id', { id })
         .andWhere(
-          '(game.whitePlayerId = :userId OR game.blackPlayerId = :userId)',
+          "((analysis.side = 'w' AND game.whitePlayerId = :userId) OR (analysis.side = 'b' AND game.blackPlayerId = :userId))",
           { userId: user.id },
         )
         .getOne();
