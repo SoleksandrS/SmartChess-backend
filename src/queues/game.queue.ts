@@ -20,8 +20,8 @@ export class GameQueue {
     try {
       await this.gamesService.makeAIMove(job.data.gameId);
     } catch (err) {
-      const msg = `error occurred with game #${job.data.gameId}:`;
-      console.log(`[GameAIMove Queue] ${msg}`, err);
+      const msg = `Something went wrong while making ai move for game "${job.data.gameId}"`;
+      console.error(`[Game Queue] - Make AI Move: ${msg}`, err);
     }
   }
 
@@ -38,8 +38,8 @@ export class GameQueue {
         .getOne();
       await this.gameAnalysisService.analyzeGame(game);
     } catch (err) {
-      const msg = `error occurred with game #${job.data.gameId}:`;
-      console.log(`[GameAIMove Queue] ${msg}`, err);
+      const msg = `Something went wrong while analyzing game "${job.data.gameId}"`;
+      console.error(`[Game Queue] - Analyze: ${msg}`, err);
     }
   }
 }
