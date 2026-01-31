@@ -67,6 +67,17 @@ export class GamesService {
     return player;
   }
 
+  async getGameForAnalyzing(id: string) {
+    return this.gameRepo
+      .createQueryBuilder('game')
+      .leftJoin('game.moves', 'move')
+      .addSelect(['move.number', 'move.side', 'move.move'])
+      .where('game.id = :id', { id })
+      .addOrderBy('move.number', 'ASC')
+      .addOrderBy('move.side', 'DESC')
+      .getOne();
+  }
+
   async findMy(query: GetMyGamesDto, email: string) {
     const { page, limit, status } = query;
 
