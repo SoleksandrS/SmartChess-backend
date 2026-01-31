@@ -13,6 +13,7 @@ import { Queue } from 'bull';
 import * as _ from 'lodash';
 import { constants } from 'src/config';
 import { EQueue } from 'src/core/enums';
+import { queueCommands } from 'src/core/queues.config';
 import { EChessResult, EChessSide } from 'src/types/chess.types';
 import { Game } from './entities/game.entity';
 import { GameMove } from './entities/game-move.entity';
@@ -249,7 +250,9 @@ export class GamesService {
 
       const isAIMove = this.checkIsAITurn(game);
       if (isAIMove && !game.result) {
-        this.gameQueue.add('make-move', { gameId: game.id });
+        this.gameQueue.add(queueCommands[EQueue.GAME].makeAIMove, {
+          gameId: game.id,
+        });
       }
 
       return true;
