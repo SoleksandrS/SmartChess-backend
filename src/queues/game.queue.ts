@@ -9,7 +9,7 @@ export class GameQueue {
   constructor(private readonly gamesService: GamesService) {}
 
   @Process(queueCommands[EQueue.GAME].makeAIMove)
-  async handleSendEmail(job: Job<{ gameId: string }>) {
+  async handleMakeAIMove(job: Job<{ gameId: string }>) {
     try {
       await this.gamesService.makeAIMove(job.data.gameId);
     } catch (err) {
