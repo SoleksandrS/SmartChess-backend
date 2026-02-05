@@ -179,6 +179,8 @@ export class GamesService {
           'game.blackPlayerId IS NOT NULL',
         )
         .addSelect(['blackPlayer.username'])
+        .leftJoin('game.analysis', 'analysis')
+        .addSelect(['analysis.side'])
         .where('game.id = :id', { id })
         .andWhere(
           '(game.whitePlayerId = :userId OR game.blackPlayerId = :userId)',
@@ -190,7 +192,12 @@ export class GamesService {
       if (!game)
         throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
 
-      return game;
+      const { analysis, ...rest } = game;
+      const side =
+        game.whitePlayerId === user.id ? EChessSide.WHITE : EChessSide.BLACK;
+      const isAnalysisPrepared = game.analysis.some((obj) => obj.side === side);
+
+      return { ...rest, isAnalysisPrepared };
     } catch (err) {
       if (err instanceof HttpException) throw err;
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
