@@ -4,6 +4,7 @@ import { MainSocketService } from './main-socket.service';
 import { ESocketEvent } from '../socket.types';
 import { GamesService } from '../../games/games.service';
 import { GameRoom } from '../classes/GameRoom';
+import { EChessSide } from 'src/types/chess.types';
 
 @Injectable()
 export class GameSocketService {
@@ -35,6 +36,17 @@ export class GameSocketService {
       if (!gameRoom) return;
 
       gameRoom.broadcast(ESocketEvent.GAME_UPDATE, data);
+    } catch (error) {
+      console.error('[Socket Service] sendGameUpdate', error);
+    }
+  }
+
+  updateForSide<T>(gameId: string, side: EChessSide, data: T) {
+    try {
+      const gameRoom = GameSocketService.rooms.get(gameId);
+      if (!gameRoom) return;
+
+      gameRoom.broadcastForSide(ESocketEvent.GAME_UPDATE, side, data);
     } catch (error) {
       console.error('[Socket Service] sendGameUpdate', error);
     }
