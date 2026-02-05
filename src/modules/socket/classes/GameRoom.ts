@@ -1,6 +1,7 @@
 import { Socket } from 'socket.io';
 import { ESocketEvent } from '../socket.types';
 import { Game } from 'src/modules/games/entities/game.entity';
+import { EChessSide } from 'src/types/chess.types';
 
 export class GameRoom {
   id: string;
@@ -27,6 +28,12 @@ export class GameRoom {
 
   broadcast<T>(event: ESocketEvent, data: T) {
     const sockets = [...this.whiteSockets, ...this.blackSockets];
+    sockets.forEach((socket) => socket.emit(event, data));
+  }
+
+  broadcastForSide<T>(event: ESocketEvent, side: EChessSide, data: T) {
+    const sockets =
+      side === EChessSide.WHITE ? this.whiteSockets : this.blackSockets;
     sockets.forEach((socket) => socket.emit(event, data));
   }
 
