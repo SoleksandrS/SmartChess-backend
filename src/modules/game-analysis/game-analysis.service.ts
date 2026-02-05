@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { isUUID } from 'class-validator';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,6 +15,7 @@ import { TShortGameMove } from '../games/entities/game-move.entity';
 import { EChessSide } from 'src/types/chess.types';
 import { ChessEngineService } from 'src/shared/chess-engine/chess-engine.service';
 import { UsersService } from '../users/users.service';
+import { GameSocketService } from '../socket/services/game-socket.service';
 
 @Injectable()
 export class GameAnalysisService {
@@ -20,6 +27,8 @@ export class GameAnalysisService {
     private chessEngineService: ChessEngineService,
     @Inject(UsersService)
     private usersService: UsersService,
+    @Inject(forwardRef(() => GameSocketService))
+    private gameSocketService: GameSocketService,
   ) {}
 
   async findOne(id: string, email: string) {
@@ -65,6 +74,9 @@ export class GameAnalysisService {
       );
       for (const side of sides) {
         await this.generateAnalysis(game.id, side, moves);
+        this.gameSocketService.updateForSide(game.id, side, {
+          values: { isAnalysisPrepared: true },
+        });
       }
     } catch (err) {
       if (err instanceof HttpException) throw err;
