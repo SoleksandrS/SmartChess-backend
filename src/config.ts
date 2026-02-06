@@ -16,6 +16,10 @@ export const envs = {
     host: process.env.REDIS_HOST || 'redis',
     port: parseInt(process.env.REDIS_PORT, 10) || 6379,
   },
+  stockfish: {
+    url: process.env.STOCKFISH_URL || 'http://localhost',
+    hmacSecret: process.env.STOCKFISH_HMAC_SECRET,
+  },
   genai: {
     apiKey: process.env.GOOGLE_GENAI_API_KEY || 'api-key',
   },
