@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Chess } from 'chess.js';
 import axios from 'axios';
+import { envs } from 'src/config';
 import { GoogleGenaiService } from '../google-genai/google-genai.service';
 import { EChessResult, EChessSide } from 'src/types/chess.types';
 import { TShortGameMove } from 'src/modules/games/entities/game-move.entity';
-import { regexBestMove, StockfishAnalysis } from './chess-engine.types';
 
 @Injectable()
 export class ChessEngineService {
@@ -28,11 +28,9 @@ export class ChessEngineService {
   }
 
   async getBestMove(gameFen: string) {
-    const url = `https://stockfish.online/api/s/v2.php?fen=${gameFen}&depth=15`;
-    const { data } = await axios.get<StockfishAnalysis>(url);
-    const [_, bestmove, ponder] = data.bestmove.match(regexBestMove);
-
-    return bestmove;
+    const url = `${envs.stockfish.url}/chess/bestmove?fen=${gameFen}`;
+    const { data } = await axios.get<string>(url);
+    return data;
   }
 
   async getAdvice(fen: string) {
