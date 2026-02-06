@@ -18,6 +18,7 @@ export const envs = {
   },
   stockfish: {
     url: process.env.STOCKFISH_URL || 'http://localhost',
+    hmacSecret: process.env.STOCKFISH_HMAC_SECRET,
   },
   genai: {
     apiKey: process.env.GOOGLE_GENAI_API_KEY || 'api-key',
